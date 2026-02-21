@@ -447,9 +447,12 @@ function getSortedTasks() {
     case 'eng':   return strSort('eng');
     case 'area':  return strSort('area');
     case 'power': return arr.sort((a,b)=>{
-      const pa=parseFloat(a.power)||0, pb=parseFloat(b.power)||0;
-      if(!pa&&pb)return 1; if(pa&&!pb)return -1;
-      return pb-pa; // 大きい順
+      const va=a.power||'', vb=b.power||'';
+      if(!va&&vb)return 1; if(va&&!vb)return -1; if(!va&&!vb)return 0;
+      // 高圧を低圧より前に表示
+      if(va==='高圧'&&vb!=='高圧')return -1;
+      if(va!=='高圧'&&vb==='高圧')return 1;
+      return va.localeCompare(vb,'ja');
     });
     case 'start': return arr.sort((a,b)=>a.start-b.start);
     case 'end':   return arr.sort((a,b)=>a.end-b.end);
@@ -520,7 +523,7 @@ function renderLeft() {
     scroll.innerHTML=`<div class="empty-chart"><div class="empty-icon">📋</div><div class="empty-text">データを読み込んでください</div><div class="empty-sub">「GAS連携」でスプレッドシートと接続するか<br>「貼り付け」でデータを直接入力</div></div>`;
     return;
   }
-  const sorted=getSortedTasks(), isGrouped=sortKey!=='none'&&sortKey!=='start'&&sortKey!=='end'&&sortKey!=='power';
+  const sorted=getSortedTasks(), isGrouped=sortKey!=='none'&&sortKey!=='start'&&sortKey!=='end';
   let lastG=null;
   scroll.innerHTML=sorted.map((t,i)=>{
     let gh='';
@@ -546,7 +549,7 @@ function renderChart() {
   const rows=document.getElementById('chartRows');
   if (!tasks.length) { rows.innerHTML=`<div class="empty-chart"><div class="empty-icon" style="font-size:36px;opacity:.15">📅</div></div>`; updateTodayLine(); return; }
   const days=getViewDays(), cw=cellW(), t=today(), viewEnd=addDays(viewStart,days.length), sorted=getSortedTasks();
-  const isGrouped=sortKey!=='none'&&sortKey!=='start'&&sortKey!=='end'&&sortKey!=='power';
+  const isGrouped=sortKey!=='none'&&sortKey!=='start'&&sortKey!=='end';
   const cellsHtml=days.map(d=>{
     const isT=d.getTime()===t.getTime(), isWe=d.getDay()===0||d.getDay()===6;
     const isSel=selectedCol&&d.getTime()===selectedCol.getTime();
