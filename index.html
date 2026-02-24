@@ -3,1180 +3,803 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>工事工程表</title>
+<title>工事工程表 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap');
+:root {
+  --bg:#f0f2f5; --surface:#fff; --surface2:#f5f6f9;
+  --border:#e4e6ed; --border2:#c9ccd6;
+  --accent:#1a56db; --accent-light:#e8f0fe; --accent-hover:#1348c0;
+  --text:#1c1f2e; --text-muted:#6b7280; --text-sub:#a0aab8;
+  --today:#e53e3e; --weekend-bg:#fafafa;
+  --selected-col:rgba(26,86,219,0.08);
+  --row-h:32px;
+  --header-h:72px;
+  --left-w:700px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text);font-size:12px;height:100vh;display:flex;flex-direction:column;overflow:hidden;}
 
-  :root {
-    --bg: #f0f2f5;
-    --surface: #ffffff;
-    --surface2: #f7f8fa;
-    --border: #e2e6ea;
-    --border2: #d0d5dd;
-    --text-primary: #1a1f2e;
-    --text-secondary: #64748b;
-    --text-muted: #94a3b8;
-    --accent: #2563eb;
-    --accent-light: #eff6ff;
-    --today-line: #ef4444;
-    --header-bg: #1a1f2e;
-    --header-text: #e2e6ea;
-    --row-hover: #f1f5f9;
-    --group-bg: #f8fafc;
-    --font-main: 'Noto Sans JP', sans-serif;
-    --font-mono: 'IBM Plex Mono', monospace;
-    --panel-width: 540px;
-  }
+/* ─ Header ─ */
+.app-header{background:var(--surface);border-bottom:1px solid var(--border);padding:0 14px;height:48px;display:flex;align-items:center;gap:10px;flex-shrink:0;box-shadow:0 1px 3px rgba(0,0,0,.06);}
+.app-title{font-size:13px;font-weight:700;color:var(--accent);white-space:nowrap;}
+.vd{width:1px;height:20px;background:var(--border);}
+.scale-group{display:flex;gap:1px;background:var(--surface2);border-radius:6px;padding:2px;}
+.scale-btn{padding:3px 9px;border-radius:4px;border:none;background:transparent;color:var(--text-muted);font-family:'Noto Sans JP',sans-serif;font-size:10px;font-weight:500;cursor:pointer;transition:all .15s;white-space:nowrap;}
+.scale-btn.active{background:var(--surface);color:var(--accent);font-weight:700;box-shadow:0 1px 3px rgba(0,0,0,.1);}
+.nav-group{display:flex;align-items:center;gap:5px;}
+.nav-btn{width:26px;height:26px;border-radius:5px;border:1px solid var(--border);background:var(--surface);color:var(--text-muted);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;transition:all .15s;}
+.nav-btn:hover{border-color:var(--accent);color:var(--accent);}
+.period-label{font-family:'DM Mono',monospace;font-size:10px;color:var(--text);font-weight:500;min-width:110px;text-align:center;}
+.today-btn,.header-btn{padding:3px 10px;border-radius:5px;border:1px solid var(--border);background:var(--surface);color:var(--text-muted);font-family:'Noto Sans JP',sans-serif;font-size:10px;cursor:pointer;transition:all .15s;white-space:nowrap;}
+.today-btn:hover,.header-btn:hover{border-color:var(--accent);color:var(--accent);}
+.header-btn.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:700;}
+.header-btn.primary:hover{background:var(--accent-hover);}
+.spacer{flex:1;}
+.count-badge{background:var(--accent-light);color:var(--accent);border-radius:20px;padding:2px 9px;font-size:10px;font-weight:700;font-family:'DM Mono',monospace;white-space:nowrap;}
+.gas-status{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--text-muted);white-space:nowrap;}
+.status-dot{width:6px;height:6px;border-radius:50%;background:#d1d5db;}
+.status-dot.connected{background:#10b981;}
+.status-dot.error{background:#ef4444;}
+.sort-group{display:flex;align-items:center;gap:5px;}
+.sort-group label{font-size:10px;color:var(--text-muted);white-space:nowrap;font-family:'Noto Sans JP',sans-serif;letter-spacing:normal;text-transform:none;}
+.sort-group select{padding:3px 24px 3px 8px;border-radius:5px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-family:'Noto Sans JP',sans-serif;font-size:10px;cursor:pointer;outline:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%236b7280'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 7px center;}
+.sort-group select:hover,.sort-group select:focus{border-color:var(--accent);}
 
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+/* ─ Main ─ */
+.main{display:flex;flex:1;overflow:hidden;}
 
-  body {
-    font-family: var(--font-main);
-    background: var(--bg);
-    color: var(--text-primary);
-    height: 100vh;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-  }
+/* ─ Left panel ─ */
+.task-panel{width:var(--left-w);flex-shrink:0;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;}
+.task-panel-header{height:var(--header-h);border-bottom:2px solid var(--border);display:flex;align-items:flex-end;flex-shrink:0;background:var(--surface2);}
+.th-cell{height:100%;display:flex;align-items:flex-end;padding:0 6px 7px;border-right:1px solid var(--border);font-size:9px;font-weight:700;color:var(--text-muted);letter-spacing:.3px;flex-shrink:0;white-space:nowrap;overflow:hidden;user-select:none;}
+.th-cell.sortable{cursor:pointer;}
+.th-cell.sortable:hover{color:var(--accent);background:rgba(26,86,219,.04);}
+.th-cell.sort-active{color:var(--accent);}
+.th-cell.sort-active::after{content:' ▲';font-size:8px;}
+.th-num{width:30px;justify-content:center;padding:0 0 7px;}
+.th-name{flex:1;min-width:0;}
+.th-area{width:68px;}
+.th-sales{width:70px;}
+.th-eng{width:70px;}
+.th-const{width:86px;}
+.th-power{width:68px;}
 
-  /* ===== TOP BAR ===== */
-  .topbar {
-    background: var(--header-bg);
-    color: var(--header-text);
-    display: flex;
-    align-items: center;
-    padding: 0 16px;
-    height: 48px;
-    gap: 12px;
-    flex-shrink: 0;
-    border-bottom: 1px solid #2d3748;
-  }
-  .topbar-title {
-    font-size: 14px;
-    font-weight: 700;
-    letter-spacing: 0.05em;
-    color: #fff;
-    margin-right: 8px;
-  }
-  .topbar-sep { width: 1px; height: 24px; background: #3d4a5c; }
+.task-scroll{flex:1;overflow-y:auto;overflow-x:hidden;}
+.task-scroll::-webkit-scrollbar{width:4px;}
+.task-scroll::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
 
-  .gas-section {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    flex: 1;
-  }
-  .gas-section input {
-    flex: 1;
-    max-width: 380px;
-    padding: 5px 10px;
-    border: 1px solid #3d4a5c;
-    border-radius: 6px;
-    background: #232b3a;
-    color: #e2e6ea;
-    font-size: 11px;
-    font-family: var(--font-mono);
-    outline: none;
-  }
-  .gas-section input::placeholder { color: #4a5568; }
-  .gas-section input:focus { border-color: var(--accent); }
+.task-row{height:var(--row-h);display:flex;align-items:center;border-bottom:1px solid var(--border);transition:background .1s;cursor:default;}
+.task-row:hover{background:var(--accent-light);}
+.td-num{width:30px;flex-shrink:0;font-family:'DM Mono',monospace;font-size:9px;color:var(--text-sub);text-align:center;}
+.td-dot-name{flex:1;min-width:0;display:flex;align-items:center;gap:6px;padding:0 6px;border-right:1px solid var(--border);overflow:hidden;height:100%;}
+.dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.td-name{flex:1;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;font-size:11px;font-weight:500;}
+.td-cell{flex-shrink:0;padding:0 6px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;font-size:10px;color:var(--text-muted);border-right:1px solid var(--border);height:100%;display:flex;align-items:center;}
+.td-area{width:68px;}
+.td-sales{width:70px;}
+.td-eng{width:70px;}
+.td-const{width:86px;}
+.td-power{width:68px;}
+.undecided{color:var(--text-sub);font-style:italic;font-size:9px;}
+.power-badge{display:inline-block;background:var(--accent-light);color:var(--accent);border-radius:3px;padding:1px 5px;font-size:9px;font-weight:700;font-family:'DM Mono',monospace;}
 
-  .btn {
-    padding: 5px 12px;
-    border-radius: 6px;
-    border: none;
-    cursor: pointer;
-    font-size: 12px;
-    font-family: var(--font-main);
-    font-weight: 500;
-    transition: all 0.15s;
-    white-space: nowrap;
-  }
-  .btn-sync {
-    background: var(--accent);
-    color: #fff;
-  }
-  .btn-sync:hover { background: #1d4ed8; }
-  .btn-paste {
-    background: #2d3748;
-    color: #cbd5e0;
-    border: 1px solid #3d4a5c;
-  }
-  .btn-paste:hover { background: #374151; }
-  .btn-nav {
-    background: #2d3748;
-    color: #cbd5e0;
-    border: 1px solid #3d4a5c;
-    padding: 4px 8px;
-    font-size: 14px;
-  }
-  .btn-nav:hover { background: #374151; }
-  .btn-today {
-    background: #2d3748;
-    color: #cbd5e0;
-    border: 1px solid #3d4a5c;
-    font-size: 11px;
-  }
-  .btn-today:hover { background: #374151; }
+/* Group header */
+.group-header-row{height:22px;display:flex;align-items:center;padding:0 10px;background:linear-gradient(90deg,var(--accent-light),transparent);border-bottom:1px solid var(--border);border-top:2px solid var(--accent);font-size:9px;font-weight:700;color:var(--accent);letter-spacing:.3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;position:sticky;top:0;z-index:2;}
+.group-chart-sep{height:22px;background:linear-gradient(90deg,var(--accent-light),rgba(26,86,219,.02));border-top:2px solid var(--accent);border-bottom:1px solid var(--border);}
 
-  .scale-select {
-    padding: 5px 8px;
-    border: 1px solid #3d4a5c;
-    border-radius: 6px;
-    background: #232b3a;
-    color: #e2e6ea;
-    font-size: 11px;
-    font-family: var(--font-main);
-    cursor: pointer;
-    outline: none;
-  }
+/* ─ Chart ─ */
+.chart-area{flex:1;overflow:auto;position:relative;}
+.chart-area::-webkit-scrollbar{height:5px;width:4px;}
+.chart-area::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px;}
+.chart-inner{position:relative;min-height:100%;}
 
-  .sort-select {
-    padding: 5px 8px;
-    border: 1px solid #3d4a5c;
-    border-radius: 6px;
-    background: #232b3a;
-    color: #e2e6ea;
-    font-size: 11px;
-    font-family: var(--font-main);
-    cursor: pointer;
-    outline: none;
-  }
+/* Date header */
+.date-header-wrap{position:sticky;top:0;z-index:20;background:var(--surface);border-bottom:2px solid var(--border);height:var(--header-h);display:flex;flex-direction:column;}
+.month-row{height:24px;display:flex;border-bottom:1px solid var(--border);background:var(--surface2);}
+.month-block{display:flex;align-items:center;justify-content:center;border-right:1px solid var(--border2);font-size:10px;font-weight:700;color:var(--accent);}
+.day-row{height:48px;display:flex;}
+.day-cell{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;border-right:1px solid var(--border);flex-shrink:0;gap:1px;cursor:pointer;transition:background .12s;position:relative;}
+.day-cell:hover{background:var(--accent-light);}
+.day-cell.weekend{background:var(--weekend-bg);}
+.day-cell.today-cell{background:#fff5f5;}
+.day-cell.selected-col{background:var(--selected-col)!important;border-right-color:var(--accent);border-left:1px solid var(--accent);}
+.day-cell.label-cell{background:var(--surface2);cursor:default;}
+.day-cell.label-cell:hover{background:var(--surface2);}
+.day-num{font-family:'DM Mono',monospace;font-size:11px;font-weight:500;color:var(--text-muted);line-height:1;}
+.day-cell.today-cell .day-num{color:var(--today);font-weight:700;}
+.day-cell.weekend .day-num{color:#c8ccd6;}
+.day-cell.selected-col .day-num{color:var(--accent);font-weight:700;}
+.day-dow{font-size:8px;color:var(--text-sub);line-height:1;}
+.day-cell.weekend .day-dow{color:#dde0e8;}
 
-  .status-dot {
-    width: 8px; height: 8px;
-    border-radius: 50%;
-    flex-shrink: 0;
-  }
-  .status-label {
-    font-size: 11px;
-    color: var(--text-muted);
-  }
+/* Chart rows */
+.chart-row{height:var(--row-h);border-bottom:1px solid var(--border);position:relative;display:flex;}
+.chart-row.even{background:rgba(0,0,0,.012);}
+.chart-row:hover{background:rgba(26,86,219,.03);}
+.cell{flex-shrink:0;height:100%;border-right:1px solid var(--border);}
+.cell.weekend{background:rgba(0,0,0,.015);}
+.cell.today-col{background:rgba(229,62,62,.04);}
+.cell.selected-col-cell{background:var(--selected-col)!important;}
 
-  /* ===== MAIN AREA ===== */
-  .main {
-    display: flex;
-    flex: 1;
-    overflow: hidden;
-  }
+/* Gantt bar */
+.gantt-bar{position:absolute;top:50%;transform:translateY(-50%);height:18px;border-radius:4px;display:flex;align-items:center;padding:0 5px;cursor:grab;user-select:none;z-index:5;transition:box-shadow .15s,filter .15s;min-width:3px;overflow:hidden;}
+.gantt-bar:hover{box-shadow:0 2px 8px rgba(0,0,0,.18);filter:brightness(1.06);z-index:10;}
+.gantt-bar.dragging{cursor:grabbing;box-shadow:0 4px 16px rgba(0,0,0,.22);z-index:20;opacity:.88;}
+.bar-label{font-size:9px;font-weight:600;color:rgba(255,255,255,.92);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:none;flex:1;}
+.bar-resize{position:absolute;right:0;top:0;bottom:0;width:6px;cursor:ew-resize;border-radius:0 4px 4px 0;background:rgba(255,255,255,.2);}
+.bar-resize:hover{background:rgba(255,255,255,.4);}
 
-  /* ===== LEFT PANEL ===== */
-  .left-panel {
-    width: var(--panel-width);
-    flex-shrink: 0;
-    display: flex;
-    flex-direction: column;
-    border-right: 2px solid var(--border2);
-    background: var(--surface);
-    overflow: hidden;
-  }
+/* Today line */
+.today-line{position:absolute;top:0;bottom:0;width:2px;background:var(--today);z-index:15;pointer-events:none;}
+.today-line::after{content:'';position:absolute;top:0;left:-4px;width:10px;height:10px;background:var(--today);border-radius:50%;}
 
-  .panel-header {
-    display: grid;
-    grid-template-columns: 32px 1fr 52px 68px 72px 68px 60px;
-    background: var(--header-bg);
-    color: var(--header-text);
-    font-size: 10px;
-    font-weight: 600;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    border-bottom: 1px solid #2d3748;
-    flex-shrink: 0;
-    user-select: none;
-  }
-  .panel-header .ph-cell {
-    padding: 9px 6px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 3px;
-    border-right: 1px solid #2d3748;
-    transition: background 0.1s;
-    white-space: nowrap;
-    overflow: hidden;
-  }
-  .panel-header .ph-cell:hover { background: #2d3748; }
-  .panel-header .ph-cell:last-child { border-right: none; }
-  .ph-cell .sort-arrow { color: #60a5fa; font-size: 9px; }
+/* Info bar */
+.date-info-bar{position:fixed;bottom:14px;left:50%;transform:translateX(-50%);background:#1c1f2e;color:#fff;padding:6px 16px;border-radius:16px;font-size:11px;font-family:'DM Mono',monospace;box-shadow:0 4px 16px rgba(0,0,0,.25);z-index:50;pointer-events:none;opacity:0;transition:opacity .2s;white-space:nowrap;}
+.date-info-bar.show{opacity:1;}
 
-  .panel-body {
-    overflow-y: auto;
-    overflow-x: hidden;
-    flex: 1;
-  }
-  .panel-body::-webkit-scrollbar { width: 4px; }
-  .panel-body::-webkit-scrollbar-track { background: transparent; }
-  .panel-body::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+/* Tooltip */
+.tooltip{position:fixed;background:#1c1f2e;color:#fff;padding:8px 12px;border-radius:8px;font-size:11px;pointer-events:none;z-index:100;white-space:nowrap;box-shadow:0 4px 16px rgba(0,0,0,.28);line-height:1.9;}
 
-  .group-header {
-    background: var(--group-bg);
-    border-bottom: 1px solid var(--border);
-    border-top: 1px solid var(--border);
-    padding: 5px 10px;
-    font-size: 11px;
-    font-weight: 700;
-    color: var(--text-secondary);
-    letter-spacing: 0.04em;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-  .group-count {
-    background: var(--border2);
-    color: var(--text-secondary);
-    border-radius: 10px;
-    padding: 1px 7px;
-    font-size: 10px;
-    font-weight: 500;
-  }
-
-  .panel-row {
-    display: grid;
-    grid-template-columns: 32px 1fr 52px 68px 72px 68px 60px;
-    border-bottom: 1px solid var(--border);
-    transition: background 0.1s;
-    cursor: pointer;
-    min-height: 38px;
-    align-items: center;
-  }
-  .panel-row:hover { background: var(--row-hover); }
-  .panel-row.selected { background: var(--accent-light); }
-
-  .pr-cell {
-    padding: 5px 6px;
-    font-size: 11px;
-    border-right: 1px solid var(--border);
-    overflow: hidden;
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    min-height: 38px;
-  }
-  .pr-cell:last-child { border-right: none; }
-
-  .row-num {
-    font-size: 10px;
-    color: var(--text-muted);
-    font-family: var(--font-mono);
-    justify-content: center;
-  }
-
-  .color-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    flex-shrink: 0;
-  }
-
-  .case-name {
-    font-size: 11px;
-    font-weight: 500;
-    color: var(--text-primary);
-    line-height: 1.3;
-    word-break: break-all;
-  }
-
-  .undecided {
-    color: var(--text-muted) !important;
-    font-style: italic;
-    font-size: 10px !important;
-  }
-
-  .power-badge {
-    display: inline-block;
-    padding: 2px 5px;
-    border-radius: 3px;
-    font-size: 9px;
-    font-weight: 700;
-    letter-spacing: 0.03em;
-    white-space: nowrap;
-  }
-  .power-toku { background: #7c3aed; color: #fff; }
-  .power-ko   { background: #dc2626; color: #fff; }
-  .power-tei  { background: #059669; color: #fff; }
-  .power-other{ background: #6b7280; color: #fff; }
-
-  /* ===== CHART AREA ===== */
-  .chart-area {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    position: relative;
-  }
-
-  .chart-header {
-    background: var(--header-bg);
-    border-bottom: 1px solid #2d3748;
-    flex-shrink: 0;
-    overflow: hidden;
-    position: relative;
-  }
-
-  .chart-body {
-    flex: 1;
-    overflow: auto;
-    position: relative;
-    cursor: default;
-  }
-  .chart-body::-webkit-scrollbar { height: 6px; width: 4px; }
-  .chart-body::-webkit-scrollbar-track { background: transparent; }
-  .chart-body::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
-
-  .chart-canvas-wrap {
-    position: relative;
-    display: inline-block;
-    min-width: 100%;
-  }
-
-  canvas { display: block; }
-
-  /* ===== TOOLTIP ===== */
-  #tooltip {
-    position: fixed;
-    background: #1a1f2e;
-    color: #e2e6ea;
-    padding: 10px 14px;
-    border-radius: 8px;
-    font-size: 12px;
-    pointer-events: none;
-    z-index: 1000;
-    display: none;
-    max-width: 280px;
-    line-height: 1.8;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
-  }
-  #tooltip strong { color: #fff; font-size: 13px; display: block; margin-bottom: 4px; }
-
-  /* ===== DATE HIGHLIGHT BAR ===== */
-  #date-bar {
-    position: fixed;
-    bottom: 0; left: 0; right: 0;
-    background: var(--header-bg);
-    color: #e2e6ea;
-    padding: 8px 20px;
-    font-size: 12px;
-    display: none;
-    align-items: center;
-    gap: 12px;
-    z-index: 999;
-    border-top: 1px solid #2d3748;
-  }
-
-  /* ===== PASTE MODAL ===== */
-  #paste-modal {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.5);
-    z-index: 2000;
-    align-items: center;
-    justify-content: center;
-  }
-  #paste-modal.show { display: flex; }
-  .modal-box {
-    background: var(--surface);
-    border-radius: 12px;
-    padding: 24px;
-    width: 560px;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-  }
-  .modal-box h3 { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
-  .modal-box p { font-size: 12px; color: var(--text-secondary); margin-bottom: 12px; line-height: 1.6; }
-  .modal-box textarea {
-    width: 100%;
-    height: 160px;
-    border: 1px solid var(--border2);
-    border-radius: 8px;
-    padding: 10px;
-    font-size: 11px;
-    font-family: var(--font-mono);
-    resize: vertical;
-    outline: none;
-    margin-bottom: 12px;
-  }
-  .modal-box textarea:focus { border-color: var(--accent); }
-  .modal-actions { display: flex; gap: 8px; justify-content: flex-end; }
-  .btn-primary { background: var(--accent); color: #fff; padding: 7px 16px; }
-  .btn-primary:hover { background: #1d4ed8; }
-  .btn-cancel { background: var(--surface2); color: var(--text-secondary); border: 1px solid var(--border2); padding: 7px 16px; }
-  .btn-cancel:hover { background: var(--border); }
-
-  /* ===== LOADING ===== */
-  .empty-state {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 200px;
-    color: var(--text-muted);
-    font-size: 13px;
-    gap: 8px;
-  }
-  .empty-state .icon { font-size: 32px; }
+/* Modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(3px);}
+.modal{background:var(--surface);border-radius:14px;width:580px;max-width:92vw;max-height:88vh;overflow-y:auto;box-shadow:0 24px 60px rgba(0,0,0,.18);}
+.modal-header{padding:16px 20px 12px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.modal-header h2{font-size:14px;font-weight:700;}
+.modal-close{width:24px;height:24px;border-radius:5px;border:none;background:var(--surface2);color:var(--text-muted);cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;}
+.modal-close:hover{background:var(--border);}
+.modal-body{padding:16px 20px;}
+.info-box{border-radius:7px;padding:10px 13px;margin-bottom:12px;font-size:11px;line-height:1.8;}
+.info-box.blue{background:var(--accent-light);color:#1e3a8a;}
+.info-box.yellow{background:#fffbeb;color:#92400e;border:1px solid #fde68a;}
+.info-box strong{font-weight:700;}
+.form-row{margin-bottom:12px;}
+label{display:block;font-size:9px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--text-muted);font-family:'DM Mono',monospace;margin-bottom:4px;}
+input[type=text]{width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:7px 11px;border-radius:6px;font-family:'Noto Sans JP',sans-serif;font-size:12px;outline:none;transition:border-color .15s;}
+input:focus{border-color:var(--accent);}
+textarea{width:100%;height:170px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:'DM Mono',monospace;font-size:10px;padding:10px;resize:vertical;outline:none;transition:border-color .15s;line-height:1.6;}
+textarea:focus{border-color:var(--accent);}
+.modal-footer{padding:12px 20px;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end;}
+.btn{padding:6px 14px;border-radius:6px;border:1px solid var(--border);background:var(--surface);color:var(--text-muted);font-family:'Noto Sans JP',sans-serif;font-size:11px;cursor:pointer;transition:all .15s;}
+.btn:hover{border-color:var(--border2);color:var(--text);}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:700;}
+.btn.primary:hover{background:var(--accent-hover);}
+.gas-url-row{display:flex;gap:7px;}
+.gas-url-row input{flex:1;}
+.gas-test-btn{padding:7px 12px;border-radius:6px;border:1px solid var(--border);background:var(--surface);color:var(--text-muted);font-size:11px;cursor:pointer;white-space:nowrap;transition:all .15s;}
+.gas-test-btn:hover{border-color:var(--accent);color:var(--accent);}
+.tab-group{display:flex;border-bottom:2px solid var(--border);margin-bottom:14px;}
+.tab-btn{padding:8px 14px;border:none;background:transparent;font-family:'Noto Sans JP',sans-serif;font-size:11px;font-weight:500;color:var(--text-muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .15s;}
+.tab-btn.active{color:var(--accent);border-bottom-color:var(--accent);font-weight:700;}
+.tab-content{display:none;}
+.tab-content.active{display:block;}
+.hidden{display:none!important;}
+.empty-chart{display:flex;flex-direction:column;align-items:center;justify-content:center;height:280px;color:var(--text-muted);gap:10px;}
+.empty-icon{font-size:40px;opacity:.3;}
+.empty-text{font-size:13px;font-weight:500;}
+.empty-sub{font-size:11px;color:var(--text-sub);text-align:center;line-height:1.8;}
 </style>
 </head>
 <body>
 
-<!-- TOP BAR -->
-<div class="topbar">
-  <span class="topbar-title">工事工程表</span>
-  <div class="topbar-sep"></div>
-  <div class="gas-section">
-    <input type="text" id="gas-url" placeholder="Google Apps Script の Web App URL を貼り付け">
-    <button class="btn btn-sync" onclick="fetchFromGAS()">↻ 同期</button>
-    <button class="btn btn-paste" onclick="openPaste()">📋 貼り付け</button>
+<div class="app-header">
+  <span class="app-title">📊 工事工程表</span>
+  <div class="vd"></div>
+  <div class="scale-group">
+    <button class="scale-btn" data-scale="week">1週間</button>
+    <button class="scale-btn active" data-scale="2weeks">2週間</button>
+    <button class="scale-btn" data-scale="month">月</button>
+    <button class="scale-btn" data-scale="quarter">3か月</button>
+    <button class="scale-btn" data-scale="half">半年</button>
+    <button class="scale-btn" data-scale="year">1年</button>
   </div>
-  <div class="topbar-sep"></div>
-  <select class="sort-select" id="sort-select" onchange="applySort()">
-    <option value="none">元の順番</option>
-    <option value="co">工事会社</option>
-    <option value="sales">自社担当</option>
-    <option value="eng">工務担当</option>
-    <option value="area">エリア</option>
-    <option value="power">受電</option>
-    <option value="start">着工日</option>
-    <option value="end">完工日</option>
-  </select>
-  <div class="topbar-sep"></div>
-  <button class="btn btn-nav" onclick="navigate(-1)">‹</button>
-  <button class="btn btn-today" onclick="goToday()">今日</button>
-  <button class="btn btn-nav" onclick="navigate(1)">›</button>
-  <select class="scale-select" id="scale-select" onchange="changeScale()">
-    <option value="1w">1週間</option>
-    <option value="2w">2週間</option>
-    <option value="1m" selected>月</option>
-    <option value="3m">3か月</option>
-    <option value="6m">半年</option>
-    <option value="1y">1年</option>
-  </select>
-  <div class="topbar-sep"></div>
-  <span id="status-dot" class="status-dot" style="background:#4a5568"></span>
-  <span id="status-label" class="status-label">データなし</span>
+  <div class="vd"></div>
+  <div class="nav-group">
+    <button class="nav-btn" id="prevBtn">‹</button>
+    <span class="period-label" id="periodLabel"></span>
+    <button class="nav-btn" id="nextBtn">›</button>
+  </div>
+  <button class="today-btn" id="todayBtn">今日</button>
+  <div class="vd"></div>
+  <div class="sort-group">
+    <label style="margin-bottom:0">並び替え：</label>
+    <select id="sortSelect">
+      <option value="none">元の順番</option>
+      <option value="co">工事会社</option>
+      <option value="sales">自社担当</option>
+      <option value="eng">工務担当</option>
+      <option value="area">エリア</option>
+      <option value="power">受電</option>
+      <option value="start">着工日</option>
+      <option value="end">完了日</option>
+    </select>
+  </div>
+  <div class="spacer"></div>
+  <span class="count-badge" id="countBadge">0 件</span>
+  <div class="gas-status">
+    <div class="status-dot" id="statusDot"></div>
+    <span id="statusLabel">未接続</span>
+  </div>
+  <button class="header-btn" id="gasSettingBtn">⚙ GAS連携</button>
+  <button class="header-btn" id="syncBtn">↻ 同期</button>
+  <button class="header-btn" id="importBtn">📋 貼り付け</button>
+  <button class="header-btn" id="sampleBtn">サンプル</button>
 </div>
 
-<!-- MAIN -->
 <div class="main">
-  <!-- LEFT PANEL -->
-  <div class="left-panel">
-    <div class="panel-header">
-      <div class="ph-cell" onclick="headerSort('num')">#</div>
-      <div class="ph-cell" onclick="headerSort('name')">案件名</div>
-      <div class="ph-cell" onclick="headerSort('power')">受電</div>
-      <div class="ph-cell" onclick="headerSort('area')">エリア</div>
-      <div class="ph-cell" onclick="headerSort('sales')">自社担当</div>
-      <div class="ph-cell" onclick="headerSort('eng')">工務担当</div>
-      <div class="ph-cell" onclick="headerSort('co')">工事会社</div>
+  <div class="task-panel">
+    <div class="task-panel-header">
+      <div class="th-cell th-num">#</div>
+      <div class="th-cell th-name">案件名</div>
+      <div class="th-cell th-area sortable" data-sort="area">エリア</div>
+      <div class="th-cell th-sales sortable" data-sort="sales">自社担当</div>
+      <div class="th-cell th-eng sortable" data-sort="eng">工務担当</div>
+      <div class="th-cell th-const sortable" data-sort="co">工事会社</div>
+      <div class="th-cell th-power sortable" data-sort="power">受電</div>
     </div>
-    <div class="panel-body" id="panel-body">
-      <div class="empty-state">
-        <div class="icon">📋</div>
-        <div>データを同期または貼り付けてください</div>
+    <div class="task-scroll" id="taskScroll">
+      <div class="empty-chart">
+        <div class="empty-icon">📋</div>
+        <div class="empty-text">データを読み込んでください</div>
+        <div class="empty-sub">「GAS連携」でスプレッドシートと接続するか<br>「貼り付け」でデータを直接入力</div>
       </div>
     </div>
   </div>
 
-  <!-- CHART -->
-  <div class="chart-area">
-    <div class="chart-header" id="chart-header">
-      <canvas id="header-canvas" height="44"></canvas>
-    </div>
-    <div class="chart-body" id="chart-body" onscroll="syncScroll()">
-      <div class="chart-canvas-wrap" id="chart-canvas-wrap">
-        <canvas id="chart-canvas"></canvas>
-      </div>
+  <div class="chart-area" id="chartArea">
+    <div class="chart-inner" id="chartInner">
+      <div class="date-header-wrap" id="dateHeader"></div>
+      <div id="chartRows"></div>
+      <div class="today-line hidden" id="todayLine"></div>
     </div>
   </div>
 </div>
 
-<!-- TOOLTIP -->
-<div id="tooltip"></div>
+<div class="date-info-bar" id="dateInfoBar"></div>
+<div class="tooltip hidden" id="tooltip"></div>
 
-<!-- DATE BAR -->
-<div id="date-bar"></div>
+<!-- GAS Modal -->
+<div class="modal-overlay hidden" id="gasModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>⚙ Google Sheets 連携設定</h2>
+      <button class="modal-close" onclick="closeGasModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="tab-group">
+        <button class="tab-btn active" data-tab="setup">接続設定</button>
+        <button class="tab-btn" data-tab="guide">GASの設定方法</button>
+      </div>
+      <div class="tab-content active" id="tab-setup">
+        <div class="info-box blue">Google Apps ScriptのデプロイURLを入力するとスプレッドシートとリアルタイム連携できます。</div>
+        <div class="form-row">
+          <label>GAS Web App URL</label>
+          <div class="gas-url-row">
+            <input type="text" id="gasUrlInput" placeholder="https://script.google.com/macros/s/...../exec">
+            <button class="gas-test-btn" id="gasTestBtn">接続テスト</button>
+          </div>
+        </div>
+        <div id="gasTestResult" style="margin-top:7px;font-size:11px;color:var(--text-muted)"></div>
+      </div>
+      <div class="tab-content" id="tab-guide">
+        <div class="info-box yellow"><strong>以下のスクリプトをスプレッドシートのGASに貼り付けてデプロイしてください。</strong></div>
+        <label>Google Apps Script コード</label>
+        <textarea id="gasCodeDisplay" readonly style="height:300px;font-size:10px;background:#1e2235;color:#a8d8a8;border-color:#2e3550"></textarea>
+        <button class="btn" style="margin-top:7px" onclick="copyGasCode()">📋 コードをコピー</button>
+        <div class="info-box blue" style="margin-top:10px;font-size:10px">
+          <strong>手順：</strong><br>
+          1. スプレッドシート → 拡張機能 → Apps Script<br>
+          2. コードを貼り付けて保存（Ctrl+S）<br>
+          3. デプロイ → 新しいデプロイ → ウェブアプリ<br>
+          4. 次のユーザーとして実行：<strong>自分</strong>　アクセス：<strong>全員</strong><br>
+          5. URLをコピーして「接続設定」タブに貼り付け
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeGasModal()">閉じる</button>
+      <button class="btn primary" onclick="saveGasUrl()">保存して同期</button>
+    </div>
+  </div>
+</div>
 
-<!-- PASTE MODAL -->
-<div id="paste-modal">
-  <div class="modal-box">
-    <h3>📋 データ貼り付け</h3>
-    <p>
-      スプレッドシートの<strong>5行目以降のデータ行</strong>を選択してコピーし、下に貼り付けてください。<br>
-      読み込む列：<strong>D（案件名）, F（受電）, G（種別）, H（エリア）, I（自社担当）, K（工務担当）, M（工事会社）, T（着工）, U（完工）</strong>
-    </p>
-    <textarea id="paste-area" placeholder="ここにスプレッドシートのデータを貼り付け..."></textarea>
-    <div class="modal-actions">
-      <button class="btn btn-cancel" onclick="closePaste()">キャンセル</button>
-      <button class="btn btn-primary" onclick="loadPaste()">読み込む</button>
+<!-- Import Modal -->
+<div class="modal-overlay hidden" id="importModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>📋 スプレッドシートから貼り付け</h2>
+      <button class="modal-close" onclick="closeImportModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="info-box blue">
+        <strong>手順：</strong> データ行をコピー（Ctrl+C）→ 下に貼り付け（Ctrl+V）→ 読み込む<br>
+        <strong>使用列：</strong> D(案件名) F(受電) H(エリア) I(自社担当) K(工務担当) M(工事会社) T(着工) U(完工)
+      </div>
+      <textarea id="pasteArea" placeholder="ここにスプレッドシートのデータを貼り付け..."></textarea>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeImportModal()">キャンセル</button>
+      <button class="btn primary" onclick="doImport()">読み込む</button>
     </div>
   </div>
 </div>
 
 <script>
-// ===== DATA =====
-let allData = [];
-let displayData = [];
-let currentSort = 'none';
-let currentSortAsc = true;
-let headerSortKey = null;
+// ─── Column mapping (0-indexed) ────────────────────────────────────
+// C=2(案件名), E=4(受電), G=6(エリア), H=7(営業担当), J=9(工務担当), L=11(工事会社), R=17(着工予定), S=18(完工予定)
+const COL = { name:3, power:5, area:7, sales:8, eng:10, co:12, start:19, end:20 }; // D=3,F=5,H=7,I=8,K=10,M=12,T=19,U=20
 
-// ===== SCALE & VIEW =====
-const SCALES = {
-  '1w':  { days: 7,   cellW: 80, label: 'day' },
-  '2w':  { days: 14,  cellW: 50, label: 'day' },
-  '1m':  { days: 30,  cellW: 28, label: 'day' },
-  '3m':  { days: 90,  cellW: 14, label: 'week' },
-  '6m':  { days: 180, cellW: 10, label: 'week' },
-  '1y':  { days: 365, cellW: 7,  label: 'week' },
-};
-let currentScale = '1m';
-let viewStart = new Date();
-const ROW_H = 38;
-const HEADER_H = 44;
-
-// Sync left panel scroll with chart
-let panelBody = null;
-function syncScroll() {
-  const chartBody = document.getElementById('chart-body');
-  if (panelBody) panelBody.scrollTop = chartBody.scrollTop;
-}
-
-// ===== COLORS =====
-const PALETTE = [
-  '#2563eb','#7c3aed','#059669','#d97706','#dc2626',
-  '#0891b2','#65a30d','#c026d3','#ea580c','#0284c7',
-  '#4f46e5','#16a34a','#9333ea','#b45309','#be123c',
+const COLORS = [
+  '#3b82f6','#10b981','#f59e0b','#ef4444','#8b5cf6','#06b6d4',
+  '#ec4899','#84cc16','#f97316','#6366f1','#14b8a6','#e11d48',
+  '#7c3aed','#0891b2','#65a30d','#0ea5e9','#d97706','#059669','#9333ea','#0284c7'
 ];
-function getColor(idx) { return PALETTE[idx % PALETTE.length]; }
 
-// ===== POWER BADGE =====
-function powerClass(p) {
-  const s = (p||'').trim();
-  if (s.includes('特高')) return 'power-toku';
-  if (s.includes('高圧')) return 'power-ko';
-  if (s.includes('低圧')) return 'power-tei';
-  return s ? 'power-other' : '';
-}
-function powerLabel(p) {
-  const s = (p||'').trim();
-  if (!s) return '';
-  if (s.includes('特高')) return '特高';
-  if (s.includes('高圧')) return '高圧';
-  if (s.includes('低圧')) return '低圧';
-  return s;
-}
+let tasks = [];
+let sortKey = 'none';
+let scale = '2weeks';
+let viewStart = null;
+let selectedCol = null;
+let dragState = null;
+let resizeState = null;
+let gasUrl = localStorage.getItem('gantt_gas_url') || '';
+let dateInfoTimer = null;
 
-// ===== SORT ORDER =====
-const POWER_ORDER = {'特高':0,'高圧':1,'低圧':2,'':99};
-function getPowerRank(p) {
-  const lbl = powerLabel(p);
-  return POWER_ORDER[lbl] ?? 3;
-}
+const SCALES = {
+  week:    { days:7,   cellW:80, unit:'day'   },
+  '2weeks':{ days:14,  cellW:52, unit:'day'   },
+  month:   { days:35,  cellW:30, unit:'day'   },
+  quarter: { days:91,  cellW:14, unit:'day'   },
+  half:    { days:183, cellW:7,  unit:'week'  },
+  year:    { days:365, cellW:4,  unit:'month' },
+};
 
-function applySort() {
-  currentSort = document.getElementById('sort-select').value;
-  headerSortKey = null;
-  updateHeaderHighlight(null);
-  renderAll();
-}
+// ─── GAS Code ─────────────────────────────────────────────────────
+const GAS_CODE = `function doGet(e) {
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const sheet = ss.getSheets()[0];
+    const data = sheet.getDataRange().getValues();
+    const rows = [];
 
-function headerSort(key) {
-  if (headerSortKey === key) {
-    currentSortAsc = !currentSortAsc;
-  } else {
-    headerSortKey = key;
-    currentSortAsc = true;
-    currentSort = 'none';
-    document.getElementById('sort-select').value = 'none';
-  }
-  updateHeaderHighlight(key);
-  renderAll();
-}
+    for (let i = 4; i < data.length; i++) {
+      const row = data[i];
+      const name  = row[3];   // D列: 案件名
+      const power = row[5];   // F列: 受電
+      const area  = row[7];   // H列: エリア
+      const sales = row[8];   // I列: 自社担当
+      const eng   = row[10];  // K列: 工務担当
+      const co    = row[12];  // M列: 工事会社
+      const start = row[19];  // T列: 着工予定
+      const end   = row[20];  // U列: 完工予定
 
-function updateHeaderHighlight(key) {
-  const cells = document.querySelectorAll('.ph-cell');
-  const keys = ['num','name','power','area','sales','eng','co'];
-  cells.forEach((c, i) => {
-    const arrows = c.querySelectorAll('.sort-arrow');
-    arrows.forEach(a => a.remove());
-    if (keys[i] === key) {
-      const arrow = document.createElement('span');
-      arrow.className = 'sort-arrow';
-      arrow.textContent = currentSortAsc ? ' ▲' : ' ▼';
-      c.appendChild(arrow);
+      if (!name || !start || !end) continue;
+      const s  = start instanceof Date ? start : new Date(start);
+      const e2 = end   instanceof Date ? end   : new Date(end);
+      if (isNaN(s) || isNaN(e2)) continue;
+
+      rows.push({
+        name:  String(name),
+        power: String(power || ''),
+        area:  String(area  || ''),
+        sales: String(sales || ''),
+        eng:   String(eng   || ''),
+        co:    String(co    || ''),
+        start: Utilities.formatDate(s,  'Asia/Tokyo', 'yyyy-MM-dd'),
+        end:   Utilities.formatDate(e2, 'Asia/Tokyo', 'yyyy-MM-dd'),
+      });
     }
+
+    return ContentService
+      .createTextOutput(JSON.stringify({ ok: true, data: rows }))
+      .setMimeType(ContentService.MimeType.JSON);
+
+  } catch(err) {
+    return ContentService
+      .createTextOutput(JSON.stringify({ ok: false, error: err.toString() }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}`;
+
+// ─── Date Utils ───────────────────────────────────────────────────
+function today() { const d=new Date(); return new Date(d.getFullYear(),d.getMonth(),d.getDate()); }
+function parseDate(v) {
+  if (!v) return null;
+  if (v instanceof Date) return new Date(v.getFullYear(),v.getMonth(),v.getDate());
+  let s = String(v).trim().replace(/\//g,'-');
+  const m = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+  if (m) return new Date(+m[1],+m[2]-1,+m[3]);
+  const m2 = s.match(/^(\d{1,2})-(\d{1,2})$/);
+  if (m2) return new Date(new Date().getFullYear(),+m2[1]-1,+m2[2]);
+  const d = new Date(s); return isNaN(d)?null:new Date(d.getFullYear(),d.getMonth(),d.getDate());
+}
+function fmt(d) { if(!d)return''; return `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')}`; }
+function addDays(d,n) { const r=new Date(d); r.setDate(r.getDate()+n); return r; }
+function diffDays(a,b) { return Math.round((b-a)/86400000); }
+function startOfWeek(d) { const r=new Date(d); r.setDate(r.getDate()-((r.getDay()||7)-1)); return r; }
+function startOfMonth(d) { return new Date(d.getFullYear(),d.getMonth(),1); }
+
+// ─── View ─────────────────────────────────────────────────────────
+function initViewStart() {
+  const t = today();
+  viewStart = (scale==='month'||scale==='quarter'||scale==='half'||scale==='year')
+    ? startOfMonth(t) : startOfWeek(t);
+}
+function getViewDays() { return Array.from({length:SCALES[scale].days},(_,i)=>addDays(viewStart,i)); }
+function cellW() { return SCALES[scale].cellW; }
+function updatePeriodLabel() {
+  const days=getViewDays(), a=days[0], b=days[days.length-1];
+  const f=d=>`${d.getFullYear()}/${d.getMonth()+1}/${d.getDate()}`;
+  document.getElementById('periodLabel').textContent=`${f(a)} – ${f(b)}`;
+}
+
+// ─── Sort ─────────────────────────────────────────────────────────
+function getSortedTasks() {
+  const arr=[...tasks];
+  const strSort=key=>arr.sort((a,b)=>{
+    const va=a[key]||'', vb=b[key]||'';
+    if(!va&&vb)return 1; if(va&&!vb)return -1; if(!va&&!vb)return 0;
+    return va.localeCompare(vb,'ja');
+  });
+  switch(sortKey){
+    case 'co':    return strSort('co');
+    case 'sales': return strSort('sales');
+    case 'eng':   return strSort('eng');
+    case 'area':  return strSort('area');
+    case 'power': return arr.sort((a,b)=>{
+      const va=a.power||'', vb=b.power||'';
+      if(!va&&vb)return 1; if(va&&!vb)return -1; if(!va&&!vb)return 0;
+      // 特高→高圧→低圧の順
+      const rank=v=>v.includes('特高')?0:v.includes('高圧')?1:v.includes('低圧')?2:3;
+      return rank(va)-rank(vb);
+    });
+    case 'start': return arr.sort((a,b)=>a.start-b.start);
+    case 'end':   return arr.sort((a,b)=>a.end-b.end);
+    default:      return arr;
+  }
+}
+
+// ─── Render ───────────────────────────────────────────────────────
+function render() {
+  renderHeader(); renderLeft(); renderChart(); updatePeriodLabel();
+  document.getElementById('countBadge').textContent=`${tasks.length} 件`;
+  document.querySelectorAll('.th-cell.sortable').forEach(th=>{
+    th.classList.toggle('sort-active', th.dataset.sort===sortKey);
   });
 }
 
-function getSortedData() {
-  let data = [...allData];
-  const sk = headerSortKey || currentSort;
+function renderHeader() {
+  const days=getViewDays(), cw=cellW(), t=today(), unit=SCALES[scale].unit;
+  // Month groups
+  const months=[]; let cur=null;
+  days.forEach(d=>{
+    const key=`${d.getFullYear()}-${d.getMonth()}`;
+    if(!cur||cur.key!==key){cur={key,label:d.toLocaleDateString('ja-JP',{year:'numeric',month:'long'}),count:0};months.push(cur);}
+    cur.count++;
+  });
+  const monthHtml=months.map(m=>{
+    const w=m.count*cw;
+    const lbl=w>55?m.label:w>28?`${new Date(m.key.split('-')[0],m.key.split('-')[1]).getMonth()+1}月`:'';
+    return `<div class="month-block" style="width:${w}px">${lbl}</div>`;
+  }).join('');
 
-  if (sk === 'none' || sk === 'num') {
-    if (headerSortKey === 'num') data.sort((a,b) => currentSortAsc ? a._idx - b._idx : b._idx - a._idx);
-    return data;
-  }
-
-  const getValue = (item, key) => {
-    const map = {
-      'power': item.power, 'area': item.area,
-      'sales': item.sales, 'eng': item.eng, 'co': item.co,
-      'name': item.name,
-      'start': item.start, 'end': item.end,
-    };
-    return map[key] || '';
-  };
-
-  const empty = (v) => !v || v.trim() === '';
-
-  if (sk === 'power') {
-    data.sort((a,b) => {
-      if (empty(a.power) && empty(b.power)) return 0;
-      if (empty(a.power)) return 1;
-      if (empty(b.power)) return -1;
-      const ra = getPowerRank(a.power), rb = getPowerRank(b.power);
-      return currentSortAsc ? ra - rb : rb - ra;
-    });
-  } else if (sk === 'start' || sk === 'end') {
-    data.sort((a,b) => {
-      const va = a[sk] ? new Date(a[sk]) : null;
-      const vb = b[sk] ? new Date(b[sk]) : null;
-      if (!va && !vb) return 0;
-      if (!va) return 1;
-      if (!vb) return -1;
-      return currentSortAsc ? va - vb : vb - va;
-    });
-  } else {
-    data.sort((a,b) => {
-      const va = getValue(a, sk), vb = getValue(b, sk);
-      if (empty(va) && empty(vb)) return 0;
-      if (empty(va)) return 1;
-      if (empty(vb)) return -1;
-      const cmp = va.localeCompare(vb, 'ja');
-      return currentSortAsc ? cmp : -cmp;
-    });
-  }
-  return data;
-}
-
-function getGroupKey(item) {
-  const sk = headerSortKey || currentSort;
-  if (sk === 'co') return item.co || '';
-  if (sk === 'area') return item.area || '';
-  if (sk === 'sales') return item.sales || '';
-  if (sk === 'eng') return item.eng || '';
-  if (sk === 'power') return powerLabel(item.power) || '';
-  return null;
-}
-
-// ===== RENDER ALL =====
-function renderAll() {
-  displayData = getSortedData();
-  renderPanel();
-  renderChart();
-}
-
-// ===== PANEL RENDER =====
-function renderPanel() {
-  panelBody = document.getElementById('panel-body');
-  const sk = headerSortKey || currentSort;
-  const showGroups = ['co','area','sales','eng','power'].includes(sk);
-
-  let html = '';
-  let lastGroup = Symbol();
-
-  displayData.forEach((item, vi) => {
-    const gk = showGroups ? getGroupKey(item) : null;
-    if (showGroups && gk !== lastGroup) {
-      const label = gk || '未決定';
-      const count = displayData.filter(d => getGroupKey(d) === gk).length;
-      html += `<div class="group-header">
-        <span>${escHtml(label)}</span>
-        <span class="group-count">${count}件</span>
+  let dayHtml='';
+  if (unit==='day') {
+    dayHtml=days.map(d=>{
+      const isToday=d.getTime()===t.getTime(), isWe=d.getDay()===0||d.getDay()===6;
+      const isSel=selectedCol&&d.getTime()===selectedCol.getTime();
+      const dow=['日','月','火','水','木','金','土'][d.getDay()];
+      let cls='day-cell';
+      if(isSel)cls+=' selected-col'; else if(isToday)cls+=' today-cell'; else if(isWe)cls+=' weekend';
+      return `<div class="${cls}" style="width:${cw}px" data-date="${d.toISOString()}" onclick="selectDate(this)">
+        <span class="day-num">${d.getDate()}</span>${cw>=24?`<span class="day-dow">${dow}</span>`:''}
       </div>`;
-      lastGroup = gk;
-    }
-
-    const color = getColor(item._idx);
-    const pbl = powerLabel(item.power);
-    const pbc = powerClass(item.power);
-
-    const td = (v, cls='') => {
-      const val = v ? escHtml(v) : '<span class="undecided">未決定</span>';
-      return `<div class="pr-cell ${cls}">${val}</div>`;
-    };
-
-    html += `<div class="panel-row" data-vi="${vi}" onclick="selectRow(${vi})">
-      <div class="pr-cell row-num">${vi+1}</div>
-      <div class="pr-cell">
-        <div class="color-dot" style="background:${color}"></div>
-        <span class="case-name">${escHtml(item.name)}</span>
-      </div>
-      <div class="pr-cell">
-        ${pbl ? `<span class="power-badge ${pbc}">${pbl}</span>` : '<span class="undecided">-</span>'}
-      </div>
-      ${td(item.area)}
-      ${td(item.sales)}
-      ${td(item.eng)}
-      ${td(item.co)}
-    </div>`;
-  });
-
-  if (!html) {
-    html = `<div class="empty-state"><div class="icon">📋</div><div>データを同期または貼り付けてください</div></div>`;
+    }).join('');
+  } else {
+    // week/month unit: show week start dates
+    const weeks=[]; let wc=null;
+    days.forEach(d=>{
+      const mo=startOfWeek(d), key=mo.toISOString();
+      if(!wc||wc.key!==key){wc={key,monday:mo,count:0};weeks.push(wc);}
+      wc.count++;
+    });
+    dayHtml=weeks.map(w=>{
+      const wd=`${w.monday.getMonth()+1}/${w.monday.getDate()}`;
+      const ww=w.count*cw;
+      return `<div class="day-cell label-cell" style="width:${ww}px;border-right:1px solid var(--border2)">
+        ${ww>18?`<span class="day-num" style="font-size:${unit==='week'?10:8}px">${wd}</span>`:''}
+      </div>`;
+    }).join('');
   }
-  panelBody.innerHTML = html;
 
-  // Sync panel scroll with chart
-  panelBody.addEventListener('scroll', () => {
-    document.getElementById('chart-body').scrollTop = panelBody.scrollTop;
-  });
+  document.getElementById('dateHeader').innerHTML=`<div class="month-row">${monthHtml}</div><div class="day-row">${dayHtml}</div>`;
+  document.getElementById('chartInner').style.minWidth=(days.length*cw)+'px';
 }
 
-let selectedVI = -1;
-function selectRow(vi) {
-  selectedVI = vi;
-  document.querySelectorAll('.panel-row').forEach(r => r.classList.remove('selected'));
-  const el = document.querySelector(`.panel-row[data-vi="${vi}"]`);
-  if (el) el.classList.add('selected');
-}
-
-// ===== CHART RENDER =====
-const hCanvas = document.getElementById('header-canvas');
-const hCtx = hCanvas.getContext('2d');
-const cCanvas = document.getElementById('chart-canvas');
-const cCtx = cCanvas.getContext('2d');
-
-function getScaleConfig() {
-  return SCALES[currentScale];
-}
-
-function getViewDates() {
-  const sc = getScaleConfig();
-  const end = new Date(viewStart);
-  end.setDate(end.getDate() + sc.days);
-  return { start: new Date(viewStart), end };
+function renderLeft() {
+  const scroll=document.getElementById('taskScroll');
+  if (!tasks.length) {
+    scroll.innerHTML=`<div class="empty-chart"><div class="empty-icon">📋</div><div class="empty-text">データを読み込んでください</div><div class="empty-sub">「GAS連携」でスプレッドシートと接続するか<br>「貼り付け」でデータを直接入力</div></div>`;
+    return;
+  }
+  const sorted=getSortedTasks(), isGrouped=sortKey!=='none'&&sortKey!=='start'&&sortKey!=='end';
+  let lastG=null;
+  scroll.innerHTML=sorted.map((t,i)=>{
+    let gh='';
+    if(isGrouped){
+      const gv=t[sortKey]||'';
+      if(gv!==lastG){lastG=gv;gh=`<div class="group-header-row">▸ ${gv||'未決定'}</div>`;}
+    }
+    const d=(val)=>val?`<span>${val}</span>`:`<span class="undecided">未決定</span>`;
+    const pwRaw=t.power||'';
+    const pwColor=pwRaw.includes('特高')?'background:#7c3aed;color:#fff':pwRaw.includes('高圧')?'background:#dc2626;color:#fff':pwRaw.includes('低圧')?'background:#059669;color:#fff':'background:var(--accent-light);color:var(--accent)';
+    const pw=pwRaw?`<span class="power-badge" style="${pwColor}">${pwRaw}</span>`:`<span class="undecided">未決定</span>`;
+    return gh+`<div class="task-row" data-id="${t.id}">
+      <div class="td-num">${i+1}</div>
+      <div class="td-dot-name"><div class="dot" style="background:${t.color}"></div><span class="td-name" title="${t.name}">${t.name}</span></div>
+      <div class="td-cell td-area">${d(t.area)}</div>
+      <div class="td-cell td-sales">${d(t.sales)}</div>
+      <div class="td-cell td-eng">${d(t.eng)}</div>
+      <div class="td-cell td-const">${d(t.co)}</div>
+      <div class="td-cell td-power">${pw}</div>
+    </div>`;
+  }).join('');
 }
 
 function renderChart() {
-  const sc = getScaleConfig();
-  const { start, end } = getViewDates();
-  const totalDays = sc.days;
-  const cellW = sc.cellW;
-  const totalW = totalDays * cellW;
-  const totalH = displayData.length * ROW_H;
-  const today = new Date();
-  today.setHours(0,0,0,0);
-
-  // Header canvas
-  const dpr = window.devicePixelRatio || 1;
-  const chartAreaW = document.getElementById('chart-area')?.offsetWidth || document.getElementById('chart-body').offsetWidth;
-  const canvasW = Math.max(totalW, chartAreaW);
-
-  hCanvas.width = canvasW * dpr;
-  hCanvas.height = HEADER_H * dpr;
-  hCanvas.style.width = canvasW + 'px';
-  hCanvas.style.height = HEADER_H + 'px';
-  hCtx.scale(dpr, dpr);
-  hCtx.clearRect(0, 0, canvasW, HEADER_H);
-
-  cCanvas.width = canvasW * dpr;
-  cCanvas.height = Math.max(totalH, 200) * dpr;
-  cCanvas.style.width = canvasW + 'px';
-  cCanvas.style.height = Math.max(totalH, 200) + 'px';
-  cCtx.scale(dpr, dpr);
-  cCtx.clearRect(0, 0, canvasW, Math.max(totalH, 200));
-
-  // BG
-  hCtx.fillStyle = '#1a1f2e';
-  hCtx.fillRect(0, 0, canvasW, HEADER_H);
-  cCtx.fillStyle = '#ffffff';
-  cCtx.fillRect(0, 0, canvasW, Math.max(totalH, 200));
-
-  // Draw columns
-  const labelMode = sc.label;
-  let x = 0;
-  const cur = new Date(start);
-
-  if (labelMode === 'day') {
-    for (let d = 0; d < totalDays; d++) {
-      const isToday = cur.toDateString() === today.toDateString();
-      const isWeekend = cur.getDay() === 0 || cur.getDay() === 6;
-      const isMon = cur.getDay() === 1;
-
-      // Header bg
-      hCtx.fillStyle = isToday ? '#1e3a5f' : '#1a1f2e';
-      hCtx.fillRect(x, 0, cellW, HEADER_H);
-
-      // Header label
-      if (cellW >= 20 || isMon) {
-        hCtx.fillStyle = isToday ? '#60a5fa' : (isWeekend ? '#64748b' : '#94a3b8');
-        hCtx.font = `${cellW >= 28 ? 10 : 9}px 'IBM Plex Mono'`;
-        hCtx.textAlign = 'center';
-
-        if (cellW >= 28) {
-          hCtx.fillText(String(cur.getDate()).padStart(2,'0'), x + cellW/2, 18);
-          if (isMon || d === 0) {
-            hCtx.fillStyle = '#60a5fa';
-            hCtx.font = `bold 9px 'Noto Sans JP'`;
-            hCtx.fillText(`${cur.getMonth()+1}/${cur.getDate()}`, x + cellW/2, 36);
-          }
-        } else {
-          if (isMon || d === 0) {
-            hCtx.fillStyle = '#94a3b8';
-            hCtx.fillText(`${cur.getMonth()+1}/${cur.getDate()}`, x + cellW/2, 26);
-          }
-        }
-      }
-
-      // Body grid
-      cCtx.fillStyle = isWeekend ? '#f8fafc' : '#fff';
-      displayData.forEach((_, ri) => {
-        cCtx.fillRect(x, ri * ROW_H, cellW, ROW_H);
-      });
-      if (isWeekend) {
-        cCtx.fillStyle = '#f1f5f9';
-        cCtx.fillRect(x, 0, cellW, Math.max(totalH, 200));
-      }
-
-      // Grid lines
-      hCtx.strokeStyle = isMon ? '#2d3748' : '#232b3a';
-      hCtx.lineWidth = isMon ? 1 : 0.5;
-      hCtx.beginPath(); hCtx.moveTo(x, 0); hCtx.lineTo(x, HEADER_H); hCtx.stroke();
-
-      cCtx.strokeStyle = isMon ? '#d0d5dd' : '#e2e6ea';
-      cCtx.lineWidth = isMon ? 1 : 0.5;
-      cCtx.beginPath(); cCtx.moveTo(x, 0); cCtx.lineTo(x, Math.max(totalH, 200)); cCtx.stroke();
-
-      cur.setDate(cur.getDate() + 1);
-      x += cellW;
+  const rows=document.getElementById('chartRows');
+  if (!tasks.length) { rows.innerHTML=`<div class="empty-chart"><div class="empty-icon" style="font-size:36px;opacity:.15">📅</div></div>`; updateTodayLine(); return; }
+  const days=getViewDays(), cw=cellW(), t=today(), viewEnd=addDays(viewStart,days.length), sorted=getSortedTasks();
+  const isGrouped=sortKey!=='none'&&sortKey!=='start'&&sortKey!=='end';
+  const cellsHtml=days.map(d=>{
+    const isT=d.getTime()===t.getTime(), isWe=d.getDay()===0||d.getDay()===6;
+    const isSel=selectedCol&&d.getTime()===selectedCol.getTime();
+    let cls='cell';
+    if(isSel)cls+=' selected-col-cell'; else if(isT)cls+=' today-col'; else if(isWe)cls+=' weekend';
+    return `<div class="${cls}" style="width:${cw}px"></div>`;
+  }).join('');
+  let lastG2=null;
+  rows.innerHTML=sorted.map((task,i)=>{
+    let sep='';
+    if(isGrouped){const gv=task[sortKey]||'';if(gv!==lastG2){lastG2=gv;if(i>0)sep=`<div class="group-chart-sep" style="width:${days.length*cw}px"></div>`;}}
+    const visible=task.end>=viewStart&&task.start<=viewEnd;
+    let barHtml='';
+    if(visible){
+      const left=diffDays(viewStart,task.start)*cw, width=Math.max((diffDays(task.start,task.end)+1)*cw,3);
+      barHtml=`<div class="gantt-bar" data-id="${task.id}" style="left:${left}px;width:${width}px;background:${task.color}"><span class="bar-label">${cw>=14?task.name:''}</span><div class="bar-resize" data-id="${task.id}"></div></div>`;
     }
-  } else {
-    // Week mode — xは日数×cellWで統一
-    while (cur < end) {
-      const dayOffset = Math.round((cur - start) / 86400000);
-      x = dayOffset * cellW;
-      const wW = cellW * 7;
+    return sep+`<div class="chart-row${i%2?'':' even'}">${cellsHtml}${barHtml}</div>`;
+  }).join('');
+  attachBarEvents(); updateTodayLine(); syncScroll();
+}
 
-      hCtx.fillStyle = '#1a1f2e';
-      hCtx.fillRect(x, 0, wW, HEADER_H);
+function updateTodayLine() {
+  const line=document.getElementById('todayLine'), days=getViewDays(), cw=cellW(), t=today();
+  const idx=days.findIndex(d=>d.getTime()===t.getTime());
+  if(idx>=0){line.classList.remove('hidden');line.style.left=(idx*cw+cw/2)+'px';}else line.classList.add('hidden');
+}
 
-      const isFirstOfMonth = cur.getDate() <= 7;
-      hCtx.fillStyle = isFirstOfMonth ? '#60a5fa' : '#94a3b8';
-      hCtx.font = isFirstOfMonth ? `bold 9px 'Noto Sans JP'` : `9px 'IBM Plex Mono'`;
-      hCtx.textAlign = 'center';
-      if (isFirstOfMonth) {
-        hCtx.fillText(`${cur.getMonth()+1}月`, x + wW/2, 18);
-        hCtx.fillStyle = '#64748b';
-        hCtx.font = `9px 'IBM Plex Mono'`;
-        hCtx.fillText(`${cur.getDate()}`, x + wW/2, 34);
-      } else {
-        hCtx.fillText(`${cur.getMonth()+1}/${cur.getDate()}`, x + wW/2, 26);
-      }
+// ─── Scroll Sync ──────────────────────────────────────────────────
+let syncing=false;
+function syncScroll(){
+  const ts=document.getElementById('taskScroll'), ca=document.getElementById('chartArea');
+  const onC=()=>{if(syncing)return;syncing=true;ts.scrollTop=ca.scrollTop;syncing=false;};
+  const onL=()=>{if(syncing)return;syncing=true;ca.scrollTop=ts.scrollTop;syncing=false;};
+  ca.removeEventListener('scroll',onC);ts.removeEventListener('scroll',onL);
+  ca.addEventListener('scroll',onC,{passive:true});ts.addEventListener('scroll',onL,{passive:true});
+}
 
-      hCtx.strokeStyle = '#2d3748';
-      hCtx.lineWidth = 1;
-      hCtx.beginPath(); hCtx.moveTo(x, 0); hCtx.lineTo(x, HEADER_H); hCtx.stroke();
+// ─── Column click ─────────────────────────────────────────────────
+function selectDate(el){
+  const d=new Date(el.dataset.date);
+  if(selectedCol&&selectedCol.getTime()===d.getTime()){selectedCol=null;hideInfoBar();}
+  else{selectedCol=d;showInfoBar(d);}
+  render();
+}
+function showInfoBar(d){
+  const bar=document.getElementById('dateInfoBar');
+  const dow=['日','月','火','水','木','金','土'][d.getDay()];
+  const count=tasks.filter(t=>t.start<=d&&t.end>=d).length;
+  bar.textContent=`📅 ${fmt(d)}（${dow}）　作業中：${count} 件`;
+  bar.classList.add('show');
+  clearTimeout(dateInfoTimer);
+  dateInfoTimer=setTimeout(()=>{selectedCol=null;hideInfoBar();render();},5000);
+}
+function hideInfoBar(){document.getElementById('dateInfoBar').classList.remove('show');}
 
-      cCtx.strokeStyle = '#d0d5dd';
-      cCtx.lineWidth = 0.5;
-      cCtx.beginPath(); cCtx.moveTo(x, 0); cCtx.lineTo(x, Math.max(totalH, 200)); cCtx.stroke();
-
-      cur.setDate(cur.getDate() + 7);
-    }
+// ─── Bar drag & resize ────────────────────────────────────────────
+function attachBarEvents(){
+  document.querySelectorAll('.gantt-bar').forEach(bar=>{
+    bar.addEventListener('mousedown',onBarDown);
+    bar.addEventListener('mouseenter',showTip);
+    bar.addEventListener('mousemove',moveTip);
+    bar.addEventListener('mouseleave',hideTip);
+  });
+  document.querySelectorAll('.bar-resize').forEach(h=>h.addEventListener('mousedown',onResizeDown));
+}
+function onBarDown(e){
+  if(e.target.classList.contains('bar-resize'))return;
+  e.preventDefault();hideTip();
+  const bar=e.currentTarget;bar.classList.add('dragging');
+  dragState={bar,id:bar.dataset.id,task:tasks.find(t=>t.id===bar.dataset.id),startX:e.clientX,origLeft:parseInt(bar.style.left)};
+}
+function onResizeDown(e){
+  e.preventDefault();e.stopPropagation();hideTip();
+  const id=e.currentTarget.dataset.id, bar=document.querySelector(`.gantt-bar[data-id="${id}"]`);
+  resizeState={bar,id,task:tasks.find(t=>t.id===id),startX:e.clientX,origWidth:parseInt(bar.style.width)};
+}
+document.addEventListener('mousemove',e=>{
+  const cw=cellW();
+  if(dragState)dragState.bar.style.left=(dragState.origLeft+e.clientX-dragState.startX)+'px';
+  if(resizeState)resizeState.bar.style.width=Math.max(cw,resizeState.origWidth+e.clientX-resizeState.startX)+'px';
+});
+document.addEventListener('mouseup',()=>{
+  const cw=cellW();
+  if(dragState){
+    const moved=Math.round((parseInt(dragState.bar.style.left)-dragState.origLeft)/cw);
+    if(moved){dragState.task.start=addDays(dragState.task.start,moved);dragState.task.end=addDays(dragState.task.end,moved);}
+    dragState.bar.classList.remove('dragging');dragState=null;render();
   }
-
-  // Row lines
-  displayData.forEach((_, ri) => {
-    cCtx.strokeStyle = '#e2e6ea';
-    cCtx.lineWidth = 0.5;
-    cCtx.beginPath();
-    cCtx.moveTo(0, ri * ROW_H);
-    cCtx.lineTo(canvasW, ri * ROW_H);
-    cCtx.stroke();
-  });
-
-  // Gantt bars
-  displayData.forEach((item, ri) => {
-    if (!item.start || !item.end) return;
-    const s = new Date(item.start); s.setHours(0,0,0,0);
-    const e = new Date(item.end);   e.setHours(0,0,0,0);
-    const color = getColor(item._idx);
-
-    const daysSinceStart = (s - start) / 86400000;
-    const duration = (e - s) / 86400000 + 1;
-    const bx = daysSinceStart * cellW;
-    const bw = duration * cellW;
-    const by = ri * ROW_H + 8;
-    const bh = ROW_H - 16;
-
-    if (bx + bw < 0 || bx > canvasW) return;
-
-    // Bar
-    const clampX = Math.max(0, bx);
-    const clampW = Math.min(bx + bw, canvasW) - clampX;
-    if (clampW <= 0) return;
-
-    cCtx.fillStyle = color + '26';
-    cCtx.beginPath();
-    cCtx.roundRect(clampX, by, clampW, bh, 3);
-    cCtx.fill();
-
-    cCtx.fillStyle = color;
-    const barLeftW = Math.min(6, clampW);
-    cCtx.beginPath();
-    cCtx.roundRect(clampX, by, barLeftW, bh, [3, 0, 0, 3]);
-    cCtx.fill();
-
-    // Label
-    if (bw > 40) {
-      cCtx.fillStyle = color;
-      cCtx.font = `500 10px 'Noto Sans JP'`;
-      cCtx.textAlign = 'left';
-      const labelX = clampX + 10;
-      const maxTextW = clampW - 16;
-      let label = item.name;
-      if (cCtx.measureText(label).width > maxTextW) {
-        while (label.length > 1 && cCtx.measureText(label + '…').width > maxTextW)
-          label = label.slice(0, -1);
-        label += '…';
-      }
-      cCtx.fillText(label, labelX, by + bh/2 + 4);
-    }
-
-    // Store bar coords for interaction
-    item._bar = { x: bx, y: by, w: bw, h: bh, ri };
-  });
-
-  // Today line
-  const todayOff = (today - start) / 86400000;
-  if (todayOff >= 0 && todayOff <= totalDays) {
-    const tx = todayOff * cellW;
-
-    hCtx.strokeStyle = '#ef4444';
-    hCtx.lineWidth = 2;
-    hCtx.beginPath(); hCtx.moveTo(tx, 0); hCtx.lineTo(tx, HEADER_H); hCtx.stroke();
-
-    // Today label
-    hCtx.fillStyle = '#ef4444';
-    hCtx.font = `bold 9px 'IBM Plex Mono'`;
-    hCtx.textAlign = 'center';
-    hCtx.fillText('TODAY', tx, 10);
-
-    cCtx.strokeStyle = '#ef4444';
-    cCtx.lineWidth = 1.5;
-    cCtx.setLineDash([4, 3]);
-    cCtx.beginPath(); cCtx.moveTo(tx, 0); cCtx.lineTo(tx, Math.max(totalH, 200)); cCtx.stroke();
-    cCtx.setLineDash([]);
-  }
-}
-
-// ===== NAVIGATION =====
-function navigate(dir) {
-  const sc = getScaleConfig();
-  const days = Math.max(1, Math.floor(sc.days / 2));
-  viewStart.setDate(viewStart.getDate() + dir * days);
-  renderChart();
-}
-
-function goToday() {
-  const today = new Date();
-  today.setHours(0,0,0,0);
-  const sc = getScaleConfig();
-  viewStart = new Date(today);
-  viewStart.setDate(viewStart.getDate() - Math.floor(sc.days / 4));
-  renderChart();
-}
-
-function changeScale() {
-  currentScale = document.getElementById('scale-select').value;
-  renderChart();
-}
-
-// ===== TOOLTIP =====
-const tooltip = document.getElementById('tooltip');
-cCanvas.addEventListener('mousemove', (e) => {
-  const rect = cCanvas.getBoundingClientRect();
-  const mx = (e.clientX - rect.left) * (cCanvas.width / cCanvas.style.width.replace('px','') / (window.devicePixelRatio||1));
-  const my = (e.clientY - rect.top) * (cCanvas.height / cCanvas.style.height.replace('px','') / (window.devicePixelRatio||1));
-
-  let found = null;
-  displayData.forEach(item => {
-    if (!item._bar) return;
-    const { x, y, w, h } = item._bar;
-    if (mx >= x && mx <= x+w && my >= y && my <= y+h) found = item;
-  });
-
-  if (found) {
-    const dur = found.start && found.end ? Math.round((new Date(found.end) - new Date(found.start)) / 86400000) + 1 : '-';
-    tooltip.innerHTML = `
-      <strong>${escHtml(found.name)}</strong>
-      📅 着工：${found.start || '-'}<br>
-      🏁 完工：${found.end || '-'}<br>
-      📏 期間：${dur}日<br>
-      ⚡ 受電：${found.power || '-'}<br>
-      📍 エリア：${found.area || '-'}<br>
-      👤 自社担当：${found.sales || '-'}<br>
-      🔧 工務担当：${found.eng || '-'}<br>
-      🏗️ 工事会社：${found.co || '-'}
-    `;
-    tooltip.style.display = 'block';
-    tooltip.style.left = (e.clientX + 14) + 'px';
-    tooltip.style.top = (e.clientY - 10) + 'px';
-    cCanvas.style.cursor = 'pointer';
-  } else {
-    tooltip.style.display = 'none';
-    cCanvas.style.cursor = 'default';
+  if(resizeState){
+    const days=Math.max(1,Math.round(parseInt(resizeState.bar.style.width)/cw));
+    resizeState.task.end=addDays(resizeState.task.start,days-1);resizeState=null;render();
   }
 });
-cCanvas.addEventListener('mouseleave', () => { tooltip.style.display = 'none'; });
 
-// ===== DATE CLICK =====
-const dateBar = document.getElementById('date-bar');
-let dateBarTimer = null;
-hCanvas.addEventListener('click', (e) => {
-  const rect = hCanvas.getBoundingClientRect();
-  const mx = e.clientX - rect.left;
-  const sc = getScaleConfig();
-  const dayIdx = Math.floor(mx / sc.cellW);
-  const clickedDate = new Date(viewStart);
-  clickedDate.setDate(clickedDate.getDate() + dayIdx);
+// ─── Tooltip ─────────────────────────────────────────────────────
+function showTip(e){
+  const task=tasks.find(t=>t.id===e.currentTarget.dataset.id);if(!task)return;
+  const dur=diffDays(task.start,task.end)+1;
+  const tt=document.getElementById('tooltip');
+  tt.innerHTML=`<strong>${task.name}</strong><br>`
+    +`着工：${fmt(task.start)}　完了：${fmt(task.end)}　期間：${dur}日<br>`
+    +(task.area?`エリア：${task.area}<br>`:'' )
+    +(task.sales?`営業：${task.sales}`:'' )+(task.eng?`　工務：${task.eng}`:'')+'<br>'
+    +(task.co?`工事：${task.co}<br>`:'' )
+    +(task.power?`受電：${task.power}`:'');
+  tt.classList.remove('hidden');moveTip(e);
+}
+function moveTip(e){const tt=document.getElementById('tooltip');tt.style.left=(e.clientX+14)+'px';tt.style.top=(e.clientY-60)+'px';}
+function hideTip(){document.getElementById('tooltip').classList.add('hidden');}
 
-  const dateStr = `${clickedDate.getFullYear()}/${clickedDate.getMonth()+1}/${clickedDate.getDate()}`;
-  const active = displayData.filter(item => {
-    if (!item.start || !item.end) return false;
-    const s = new Date(item.start), en = new Date(item.end);
-    return clickedDate >= s && clickedDate <= en;
+// ─── Paste Import ────────────────────────────────────────────────
+function parseTSV(text){
+  const lines=text.trim().split('\n'); const result=[]; let ci=0;
+  lines.forEach(line=>{
+    const c=line.split('\t');
+    if(c.length<21)return;
+    const name=c[COL.name]?.trim(), start=parseDate(c[COL.start]?.trim()), end=parseDate(c[COL.end]?.trim());
+    if(!name||!start||!end||start>end)return;
+    result.push({id:Date.now().toString()+Math.random(),name,start,end,
+      area:c[COL.area]?.trim()||'', sales:c[COL.sales]?.trim()||'',
+      eng:c[COL.eng]?.trim()||'', co:c[COL.co]?.trim()||'',
+      power:c.length>COL.power?c[COL.power]?.trim()||'':'',
+      color:COLORS[ci++%COLORS.length]});
   });
+  return result;
+}
+function doImport(){
+  const text=document.getElementById('pasteArea').value.trim();
+  if(!text)return alert('データを貼り付けてください');
+  const parsed=parseTSV(text);
+  if(!parsed.length)return alert('読み込めませんでした。\nC(案件名)/E(受電)/G(エリア)/H(営業)/J(工務)/L(工事会社)/R(着工)/S(完工)列が含まれているか確認してください。');
+  tasks=[...tasks,...parsed];closeImportModal();scrollToEarliest();render();
+}
 
-  dateBar.style.display = 'flex';
-  dateBar.innerHTML = `<strong>${dateStr}</strong> — 作業中：<strong>${active.length}件</strong> ${active.map(i => `<span style="background:#2d3748;padding:2px 8px;border-radius:4px;font-size:11px;">${escHtml(i.name)}</span>`).join(' ')}`;
-  clearTimeout(dateBarTimer);
-  dateBarTimer = setTimeout(() => { dateBar.style.display = 'none'; }, 5000);
-});
-
-// ===== GAS FETCH =====
-async function fetchFromGAS() {
-  const url = document.getElementById('gas-url').value.trim();
-  if (!url) { alert('GAS の URL を入力してください'); return; }
+// ─── GAS Sync ────────────────────────────────────────────────────
+async function syncFromGAS(){
+  if(!gasUrl){openGasModal();return;}
   setStatus('loading');
-  try {
-    const res = await fetch(url);
-    const json = await res.json();
-    if (!json.ok) throw new Error(json.error || 'GAS error');
-    loadData(json.data);
-    setStatus('ok', json.data.length + '件');
-    localStorage.setItem('gasUrl', url);
-    localStorage.setItem('gasData', JSON.stringify(json.data));
-  } catch(err) {
-    setStatus('error');
-    alert('取得失敗: ' + err.message);
-  }
+  try{
+    const res=await fetch(gasUrl), json=await res.json();
+    if(!json.ok)throw new Error(json.error||'Error');
+    let ci=0;
+    tasks=json.data.map(r=>({
+      id:Date.now().toString()+Math.random(),
+      name:r.name, area:r.area||'', sales:r.sales||'', eng:r.eng||'', co:r.co||'', power:r.power||'',
+      start:parseDate(r.start), end:parseDate(r.end), color:COLORS[ci++%COLORS.length]
+    })).filter(t=>t.start&&t.end&&t.start<=t.end);
+    setStatus('connected');scrollToEarliest();render();
+  }catch(err){setStatus('error');alert('接続エラー：\n'+err.message);}
 }
+function setStatus(s){
+  const dot=document.getElementById('statusDot'),lbl=document.getElementById('statusLabel');
+  dot.className='status-dot';
+  if(s==='connected'){dot.classList.add('connected');lbl.textContent='接続済';}
+  else if(s==='error'){dot.classList.add('error');lbl.textContent='エラー';}
+  else if(s==='loading')lbl.textContent='同期中…';
+  else lbl.textContent='未接続';
+}
+async function testGasConnection(){
+  const url=document.getElementById('gasUrlInput').value.trim();if(!url)return;
+  const res=document.getElementById('gasTestResult');res.textContent='接続テスト中…';
+  try{
+    const r=await fetch(url),j=await r.json();
+    if(j.ok){res.style.color='#10b981';res.textContent=`✓ 接続成功！${j.data.length}件`;}
+    else{res.style.color='#ef4444';res.textContent='✗ '+(j.error||'不明');}
+  }catch(e){res.style.color='#ef4444';res.textContent='✗ 接続失敗：'+e.message;}
+}
+function saveGasUrl(){gasUrl=document.getElementById('gasUrlInput').value.trim();localStorage.setItem('gantt_gas_url',gasUrl);closeGasModal();syncFromGAS();}
+function openGasModal(){document.getElementById('gasUrlInput').value=gasUrl;document.getElementById('gasCodeDisplay').value=GAS_CODE;document.getElementById('gasTestResult').textContent='';document.getElementById('gasModal').classList.remove('hidden');}
+function closeGasModal(){document.getElementById('gasModal').classList.add('hidden');}
+function copyGasCode(){navigator.clipboard.writeText(GAS_CODE).then(()=>alert('コピーしました！'));}
+function openImportModal(){document.getElementById('pasteArea').value='';document.getElementById('importModal').classList.remove('hidden');setTimeout(()=>document.getElementById('pasteArea').focus(),100);}
+function closeImportModal(){document.getElementById('importModal').classList.add('hidden');}
 
-// ===== PASTE =====
-function openPaste() { document.getElementById('paste-modal').classList.add('show'); }
-function closePaste() { document.getElementById('paste-modal').classList.remove('show'); }
-
-function loadPaste() {
-  const text = document.getElementById('paste-area').value;
-  const rows = text.trim().split('\n').filter(r => r.trim());
-  const parsed = [];
-  rows.forEach(row => {
-    const cols = row.split('\t');
-    // Column mapping (A=0): D=3, F=5, G=6, H=7, I=8, K=10, M=12, T=19, U=20
-    // Need at least 21 columns
-    if (cols.length < 21) {
-      console.log('行スキップ（列数不足）:', cols.length, cols.slice(0,5));
-      return;
-    }
-    const name = cols[3]?.trim();
-    const start = cols[19]?.trim();
-    const end   = cols[20]?.trim();
-    console.log('読込:', name, start, end);
-    if (!name) return;
-    const s = parseDate(start), e = parseDate(end);
-    // 日付なしでも案件名があれば登録（着工・完工は空でもOK）
-    parsed.push({
-      name,
-      power: cols[5]?.trim() || '',
-      kind:  cols[6]?.trim() || '',
-      area:  cols[7]?.trim() || '',
-      sales: cols[8]?.trim() || '',
-      eng:   cols[10]?.trim() || '',
-      co:    cols[12]?.trim() || '',
-      start: s ? fmtDate(s) : '',
-      end:   e ? fmtDate(e) : '',
-    });
+// ─── Sample ───────────────────────────────────────────────────────
+function loadSample(){
+  const t=today(),y=t.getFullYear(),m=t.getMonth();
+  const areas=['広島市','福山市','尾道市','三原市','呉市'];
+  const sales=['田中','佐藤','鈴木','山田','中村'];
+  const engs=['松本','渡辺','伊藤','小林','加藤'];
+  const cos=['太陽光工業','エコソーラー','グリーンエネ','サンパワー','レネウス',''];
+  const powers=['50kW','100kW','200kW','300kW','500kW',''];
+  const names=['ヤクルト','株式会社ホンダオート','中尾フィルター工業','みなり技研','イケダ株式会社',
+    '江田自透析所','共立工業 増設','クシヨブレーキ','横浜ゴム（株）尾道工場','井原精機',
+    '王吉城 カーポート','メタコート棒増棟','社会福祉法人 虹の会','ワイエステクノ',
+    'エイコー電子','元久保工作所','朋間エンジニアリング','ホームセンターナンバ','神門酒業','広島市ごみ処理施設'];
+  tasks=names.map((name,i)=>{
+    const s=addDays(new Date(y,m,1),Math.floor(Math.random()*40)-5);
+    return{id:Date.now().toString()+i,name,start:s,end:addDays(s,14+Math.floor(Math.random()*60)),
+      area:areas[i%areas.length],sales:sales[i%sales.length],eng:engs[i%engs.length],
+      co:cos[i%cos.length],power:powers[i%powers.length],color:COLORS[i%COLORS.length]};
   });
-  if (!parsed.length) { alert('データが読み込めませんでした。\nA列から全列をコピーしているか確認してください。'); return; }
-  const withDates = parsed.filter(r => r.start && r.end).length;
-  loadData(parsed);
-  setStatus('ok', `${parsed.length}件（うち日付あり${withDates}件）`);
-  closePaste();
+  scrollToEarliest();render();
 }
 
-function parseDate(s) {
-  if (!s) return null;
-  // yyyy-MM-dd or yyyy/MM/dd
-  const m = s.match(/(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})/);
-  if (m) return new Date(+m[1], +m[2]-1, +m[3]);
-  // "Fri Feb 20 2026 00:00:00 GMT+0900" style (Date.toString)
-  const d = new Date(s);
-  if (!isNaN(d)) return d;
-  // Excel serial number
-  const n = Number(s);
-  if (!isNaN(n) && n > 30000) {
-    return new Date(Date.UTC(1899,11,30) + n * 86400000);
-  }
-  return null;
+// ─── Nav ──────────────────────────────────────────────────────────
+function scrollToEarliest(){if(!tasks.length)return;const e=tasks.reduce((a,b)=>a.start<b.start?a:b);viewStart=addDays(e.start,-2);render();}
+function navigate(dir){viewStart=addDays(viewStart,dir*SCALES[scale].days);render();}
+function goToday(){
+  initViewStart();render();
+  setTimeout(()=>{
+    const days=getViewDays(),cw=cellW(),t=today();
+    const idx=days.findIndex(d=>d.getTime()===t.getTime());
+    if(idx>=0)document.getElementById('chartArea').scrollLeft=Math.max(0,idx*cw-200);
+  },50);
 }
 
-function fmtDate(d) {
-  if (!d) return '';
-  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-}
+// ─── Events ───────────────────────────────────────────────────────
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
+    btn.classList.add('active');document.getElementById('tab-'+btn.dataset.tab).classList.add('active');
+  });
+});
+document.querySelectorAll('.th-cell.sortable').forEach(th=>{
+  th.addEventListener('click',()=>{
+    sortKey=sortKey===th.dataset.sort?'none':th.dataset.sort;
+    document.getElementById('sortSelect').value=sortKey;
+    render();
+  });
+});
+document.querySelectorAll('.scale-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.scale-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');scale=btn.dataset.scale;initViewStart();render();
+  });
+});
+document.getElementById('sortSelect').addEventListener('change',e=>{sortKey=e.target.value;render();});
+document.getElementById('prevBtn').addEventListener('click',()=>navigate(-1));
+document.getElementById('nextBtn').addEventListener('click',()=>navigate(1));
+document.getElementById('todayBtn').addEventListener('click',goToday);
+document.getElementById('gasSettingBtn').addEventListener('click',openGasModal);
+document.getElementById('syncBtn').addEventListener('click',syncFromGAS);
+document.getElementById('importBtn').addEventListener('click',openImportModal);
+document.getElementById('sampleBtn').addEventListener('click',loadSample);
+document.getElementById('gasTestBtn').addEventListener('click',testGasConnection);
+document.querySelectorAll('.modal-overlay').forEach(el=>{
+  el.addEventListener('click',e=>{if(e.target===el)el.classList.add('hidden');});
+});
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape')document.querySelectorAll('.modal-overlay').forEach(el=>el.classList.add('hidden'));
+});
 
-function loadData(rows) {
-  allData = rows.map((r, i) => ({ ...r, _idx: i }));
-  goToday();
-  renderAll();
-}
-
-function setStatus(state, label='') {
-  const dot = document.getElementById('status-dot');
-  const lbl = document.getElementById('status-label');
-  if (state === 'ok')      { dot.style.background = '#22c55e'; lbl.textContent = label || 'OK'; }
-  else if (state === 'loading') { dot.style.background = '#f59e0b'; lbl.textContent = '読込中…'; }
-  else if (state === 'error')   { dot.style.background = '#ef4444'; lbl.textContent = 'エラー'; }
-  else                          { dot.style.background = '#4a5568'; lbl.textContent = 'データなし'; }
-}
-
-function escHtml(s) {
-  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
-// ===== INIT =====
-(function init() {
-  const today = new Date();
-  today.setHours(0,0,0,0);
-  viewStart = new Date(today);
-  viewStart.setDate(viewStart.getDate() - 7);
-
-  const savedUrl = localStorage.getItem('gasUrl');
-  if (savedUrl) document.getElementById('gas-url').value = savedUrl;
-
-  const savedData = localStorage.getItem('gasData');
-  if (savedData) {
-    try {
-      loadData(JSON.parse(savedData));
-      setStatus('ok', JSON.parse(savedData).length + '件（キャッシュ）');
-    } catch(e) {}
-  }
-
-  renderChart();
-  window.addEventListener('resize', renderChart);
-})();
+// ─── Init ─────────────────────────────────────────────────────────
+if(gasUrl)setStatus('connected');
+initViewStart();render();
+if(gasUrl)setTimeout(syncFromGAS,500);
 </script>
 </body>
 </html>
