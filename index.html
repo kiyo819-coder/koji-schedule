@@ -313,7 +313,7 @@ textarea:focus{border-color:var(--accent);}
     <div class="modal-body">
       <div class="info-box blue">
         <strong>手順：</strong> データ行をコピー（Ctrl+C）→ 下に貼り付け（Ctrl+V）→ 読み込む<br>
-        <strong>使用列：</strong> D(案件名) F(受電種別) G(エリア) H(自社担当) J(工務担当) L(工事会社) T(着工) U(完工)
+        <strong>使用列：</strong> D(案件名) F(受電) H(エリア) I(自社担当) K(工務担当) M(工事会社) S(着工) T(完工)
       </div>
       <textarea id="pasteArea" placeholder="ここにスプレッドシートのデータを貼り付け..."></textarea>
     </div>
@@ -327,7 +327,7 @@ textarea:focus{border-color:var(--accent);}
 <script>
 // ─── Column mapping (0-indexed) ────────────────────────────────────
 // C=2(案件名), E=4(受電), G=6(エリア), H=7(営業担当), J=9(工務担当), L=11(工事会社), R=17(着工予定), S=18(完工予定)
-const COL = { name:3, power:5, area:6, sales:7, eng:9, co:11, start:19, end:20 }; // D=3,F=5,G=6,H=7,J=9,L=11,T=19,U=20
+const COL = { name:3, power:5, area:7, sales:8, eng:10, co:12, start:18, end:19 }; // D=3,F=5,H=7,I=8,K=10,M=12,S=18,T=19
 
 const COLORS = [
   '#3b82f6','#10b981','#f59e0b','#ef4444','#8b5cf6','#06b6d4',
@@ -366,12 +366,12 @@ const GAS_CODE = `function doGet(e) {
       const row = data[i];
       const name  = row[3];   // D列: 案件名
       const power = row[5];   // F列: 受電種別
-      const area  = row[6];   // G列: エリア
-      const sales = row[7];   // H列: 自社担当
-      const eng   = row[9];   // J列: 工務担当
-      const co    = row[11];  // L列: 工事会社
-      const start = row[19];  // T列: 着工予定
-      const end   = row[20];  // U列: 完工予定
+      const area  = row[7];   // H列: エリア
+      const sales = row[8];   // I列: 自社担当
+      const eng   = row[10];  // K列: 工務担当
+      const co    = row[12];  // M列: 工事会社
+      const start = row[18];  // S列: 着工予定
+      const end   = row[19];  // T列: 完工予定
 
       if (!name || !start || !end) continue;
       const s  = start instanceof Date ? start : new Date(start);
