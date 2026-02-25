@@ -427,7 +427,15 @@ function initViewStart() {
   viewStart = (scale==='month'||scale==='quarter'||scale==='half'||scale==='year')
     ? startOfMonth(t) : startOfWeek(t);
 }
-function getViewDays() { return Array.from({length:SCALES[scale].days},(_,i)=>addDays(viewStart,i)); }
+function getViewDays() {
+  if(scale==='half'||scale==='year'){
+    const months=scale==='half'?6:12;
+    const end=new Date(viewStart.getFullYear(),viewStart.getMonth()+months,0); // last day of period
+    const arr=[]; for(let d=new Date(viewStart);d<=end;d=addDays(d,1)) arr.push(new Date(d));
+    return arr;
+  }
+  return Array.from({length:SCALES[scale].days},(_,i)=>addDays(viewStart,i));
+}
 function cellW() { return SCALES[scale].cellW; }
 function updatePeriodLabel() {
   const days=getViewDays(), a=days[0], b=days[days.length-1];
@@ -463,6 +471,8 @@ function getSortedTasks() {
 
 // ─── Render ───────────────────────────────────────────────────────
 function render() {
+  // For half/year, always snap viewStart to the 1st of the month.
+  if(scale==='half'||scale==='year') viewStart=startOfMonth(viewStart);
   renderHeader(); renderLeft(); renderChart(); updatePeriodLabel();
   // renderLeft() replaces innerHTML which resets taskScroll.scrollTop to 0.
   // Force chartArea.scrollTop to match so both panels stay in sync.
@@ -782,8 +792,16 @@ function loadSample(){
 }
 
 // ─── Nav ──────────────────────────────────────────────────────────
-function scrollToEarliest(){if(!tasks.length)return;const e=tasks.reduce((a,b)=>a.start<b.start?a:b);viewStart=addDays(e.start,-2);render();}
-function navigate(dir){viewStart=addDays(viewStart,dir*SCALES[scale].days);render();}
+function scrollToEarliest(){if(!tasks.length)return;const e=tasks.reduce((a,b)=>a.start<b.start?a:b);viewStart=(scale==='half'||scale==='year')?startOfMonth(e.start):addDays(e.start,-2);render();}
+function navigate(dir){
+  if(scale==='half'||scale==='year'){
+    const months=scale==='half'?6:12;
+    viewStart=new Date(viewStart.getFullYear(),viewStart.getMonth()+dir*months,1);
+  } else {
+    viewStart=addDays(viewStart,dir*SCALES[scale].days);
+  }
+  render();
+}
 function goToday(){
   initViewStart();render();
   setTimeout(()=>{
