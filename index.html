@@ -35,6 +35,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
 .today-btn:hover,.header-btn:hover{border-color:var(--accent);color:var(--accent);}
 .header-btn.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:700;}
 .header-btn.primary:hover{background:var(--accent-hover);}
+.header-btn.filter-active{background:var(--accent-light);border-color:var(--accent);color:var(--accent);font-weight:700;}
 .spacer{flex:1;}
 .count-badge{background:var(--accent-light);color:var(--accent);border-radius:20px;padding:2px 9px;font-size:10px;font-weight:700;font-family:'DM Mono',monospace;white-space:nowrap;}
 .gas-status{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--text-muted);white-space:nowrap;}
@@ -182,11 +183,37 @@ textarea:focus{border-color:var(--accent);}
 .empty-sub{font-size:11px;color:var(--text-sub);text-align:center;line-height:1.8;}
 
 /* ─ Print ─ */
+#printTimestamp{display:none;text-align:right;font-size:10px;color:#555;font-family:'DM Mono',monospace;padding:4px 8px 0;}
 @media print{
   @page{size:A4 landscape;margin:8mm;}
   *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;}
   .app-header,.modal-overlay,.tooltip,.date-info-bar,.today-line{display:none!important;}
+  #printTimestamp{display:block!important;}
 }
+
+/* ─ Filter checkbox list ─ */
+.filter-check-item{display:flex;align-items:center;gap:8px;padding:5px 8px;border-radius:5px;cursor:pointer;font-size:11px;font-weight:400;transition:background .1s;}
+.filter-check-item:hover{background:var(--accent-light);}
+.filter-check-item input[type=checkbox]{width:14px;height:14px;accent-color:var(--accent);flex-shrink:0;cursor:pointer;}
+.filter-check-item .co-label{flex:1;}
+.filter-check-item .co-count{color:var(--text-sub);font-size:10px;font-family:'DM Mono',monospace;}
+
+/* ─ Filter Panel ─ */
+#filterPanel{position:fixed;top:56px;right:8px;background:var(--surface);border:1px solid var(--border2);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.14);z-index:300;width:250px;display:none;}
+#filterPanel.open{display:block;}
+.filter-panel-header{padding:10px 12px 8px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.filter-panel-title{font-size:11px;font-weight:700;color:var(--text);}
+.filter-panel-close{border:none;background:none;cursor:pointer;font-size:14px;color:var(--text-muted);padding:0 2px;line-height:1;}
+.filter-panel-close:hover{color:var(--text);}
+.filter-panel-actions{padding:6px 8px;display:flex;gap:6px;border-bottom:1px solid var(--border);}
+.filter-panel-actions button{flex:1;padding:4px 0;border-radius:4px;border:1px solid var(--border);background:var(--surface2);color:var(--text-muted);font-family:'Noto Sans JP',sans-serif;font-size:10px;cursor:pointer;transition:all .12s;}
+.filter-panel-actions button:hover{border-color:var(--accent);color:var(--accent);}
+.filter-list{max-height:260px;overflow-y:auto;padding:4px;}
+.filter-list::-webkit-scrollbar{width:4px;}
+.filter-list::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
+.filter-panel-footer{padding:8px 12px;border-top:1px solid var(--border);}
+.filter-apply-btn{width:100%;padding:5px 0;border-radius:5px;border:none;background:var(--accent);color:#fff;font-family:'Noto Sans JP',sans-serif;font-size:11px;font-weight:700;cursor:pointer;transition:background .15s;}
+.filter-apply-btn:hover{background:var(--accent-hover);}
 </style>
 </head>
 <body>
@@ -233,6 +260,7 @@ textarea:focus{border-color:var(--accent);}
   <button class="header-btn" id="syncBtn">↻ 同期</button>
   <button class="header-btn" id="importBtn">📋 貼り付け</button>
   <button class="header-btn" id="sampleBtn">サンプル</button>
+  <button class="header-btn" id="filterBtn">🏢 工事会社フィルター</button>
   <div class="vd"></div>
   <button class="header-btn" id="printBtn">🖨 印刷</button>
 </div>
@@ -268,6 +296,7 @@ textarea:focus{border-color:var(--accent);}
 
 <div class="date-info-bar" id="dateInfoBar"></div>
 <div class="tooltip hidden" id="tooltip"></div>
+<div id="printTimestamp"></div>
 
 <!-- GAS Modal -->
 <div class="modal-overlay hidden" id="gasModal">
@@ -335,6 +364,22 @@ textarea:focus{border-color:var(--accent);}
   </div>
 </div>
 
+<!-- Filter Panel -->
+<div id="filterPanel">
+  <div class="filter-panel-header">
+    <span class="filter-panel-title">🏢 工事会社フィルター</span>
+    <button class="filter-panel-close" onclick="closeFilterPanel()">✕</button>
+  </div>
+  <div class="filter-panel-actions">
+    <button onclick="filterSelectAll()">全選択</button>
+    <button onclick="filterSelectNone()">全解除</button>
+  </div>
+  <div class="filter-list" id="filterList"></div>
+  <div class="filter-panel-footer">
+    <button class="filter-apply-btn" onclick="applyCoFilter()">適用</button>
+  </div>
+</div>
+
 <script>
 // ─── Column mapping (0-indexed) ────────────────────────────────────
 // C=2(案件名), E=4(受電), G=6(エリア), H=7(営業担当), J=9(工務担当), L=11(工事会社), R=17(着工予定), S=18(完工予定)
@@ -355,6 +400,7 @@ let dragState = null;
 let resizeState = null;
 let gasUrl = localStorage.getItem('gantt_gas_url') || '';
 let dateInfoTimer = null;
+let coFilter = null; // null=全表示, Set=表示する工事会社名の集合
 
 const SCALES = {
   week:    { days:7,   cellW:80, unit:'day'   },
@@ -454,7 +500,7 @@ function updatePeriodLabel() {
 
 // ─── Sort ─────────────────────────────────────────────────────────
 function getSortedTasks() {
-  const arr=[...tasks];
+  const arr = coFilter !== null ? tasks.filter(t=>coFilter.has(t.co||'')) : [...tasks];
   const strSort=key=>arr.sort((a,b)=>{
     const va=a[key]||'', vb=b[key]||'';
     if(!va&&vb)return 1; if(va&&!vb)return -1; if(!va&&!vb)return 0;
@@ -486,7 +532,8 @@ function render() {
   // renderLeft() replaces innerHTML which resets taskScroll.scrollTop to 0.
   // Force chartArea.scrollTop to match so both panels stay in sync.
   document.getElementById('chartArea').scrollTop = document.getElementById('taskScroll').scrollTop;
-  document.getElementById('countBadge').textContent=`${tasks.length} 件`;
+  const _filtLen = coFilter !== null ? tasks.filter(t=>coFilter.has(t.co||'')).length : tasks.length;
+  document.getElementById('countBadge').textContent = coFilter !== null ? `${_filtLen} / ${tasks.length} 件` : `${tasks.length} 件`;
   document.querySelectorAll('.th-cell.sortable').forEach(th=>{
     th.classList.toggle('sort-active', th.dataset.sort===sortKey);
   });
@@ -758,7 +805,7 @@ function doImport(){
   if(!text)return alert('データを貼り付けてください');
   const parsed=parseTSV(text);
   if(!parsed.length)return alert('読み込めませんでした。\nC(案件名)/E(受電)/G(エリア)/H(営業)/J(工務)/L(工事会社)/R(着工)/S(完工)列が含まれているか確認してください。');
-  tasks=[...tasks,...parsed];closeImportModal();scrollToEarliest();render();
+  tasks=[...tasks,...parsed];resetCoFilter();closeImportModal();scrollToEarliest();render();
 }
 
 // ─── GAS Sync ────────────────────────────────────────────────────
@@ -793,7 +840,7 @@ async function syncFromGAS(){
       name:r.name, area:r.area||'', sales:r.sales||'', eng:r.eng||'', co:r.co||'', power:r.power||'',
       start:parseDate(r.start), end:parseDate(r.end), color:COLORS[ci++%COLORS.length]
     })).filter(t=>t.start&&t.end&&t.start<=t.end);
-    setStatus('connected');scrollToEarliest();render();
+    setStatus('connected');resetCoFilter();scrollToEarliest();render();
   }catch(err){setStatus('error');alert('接続エラー：\n'+gasErrMsg(err));}
 }
 function setStatus(s){
@@ -838,7 +885,50 @@ function loadSample(){
       area:areas[i%areas.length],sales:sales[i%sales.length],eng:engs[i%engs.length],
       co:cos[i%cos.length],power:powers[i%powers.length],color:COLORS[i%COLORS.length]};
   });
-  scrollToEarliest();render();
+  resetCoFilter();scrollToEarliest();render();
+}
+
+// ─── Company Filter ───────────────────────────────────────────────
+function getUniqueCos() {
+  const set = new Set(tasks.map(t=>t.co||''));
+  return [...set].sort((a,b)=>{
+    if(!a && b) return 1; if(a && !b) return -1; if(!a && !b) return 0;
+    return a.localeCompare(b,'ja');
+  });
+}
+function openFilterPanel() {
+  if(!tasks.length) return;
+  const cos = getUniqueCos();
+  const list = document.getElementById('filterList');
+  list.innerHTML = cos.map(co=>{
+    const label = co || '（未設定）';
+    const cnt = tasks.filter(t=>(t.co||'')===co).length;
+    const chk = coFilter===null || coFilter.has(co);
+    return `<label class="filter-check-item"><input type="checkbox" value="${co.replace(/"/g,'&quot;')}" ${chk?'checked':''}><span class="co-label">${label}</span><span class="co-count">${cnt}件</span></label>`;
+  }).join('');
+  document.getElementById('filterPanel').classList.add('open');
+}
+function closeFilterPanel() {
+  document.getElementById('filterPanel').classList.remove('open');
+}
+function filterSelectAll() {
+  document.getElementById('filterList').querySelectorAll('input[type=checkbox]').forEach(cb=>cb.checked=true);
+}
+function filterSelectNone() {
+  document.getElementById('filterList').querySelectorAll('input[type=checkbox]').forEach(cb=>cb.checked=false);
+}
+function applyCoFilter() {
+  const checked = [...document.getElementById('filterList').querySelectorAll('input[type=checkbox]:checked')].map(cb=>cb.value);
+  const allCos = getUniqueCos();
+  coFilter = checked.length===allCos.length ? null : new Set(checked);
+  closeFilterPanel();
+  const btn = document.getElementById('filterBtn');
+  coFilter!==null ? btn.classList.add('filter-active') : btn.classList.remove('filter-active');
+  render();
+}
+function resetCoFilter() {
+  coFilter = null;
+  document.getElementById('filterBtn').classList.remove('filter-active');
 }
 
 // ─── Nav ──────────────────────────────────────────────────────────
@@ -891,6 +981,15 @@ document.getElementById('syncBtn').addEventListener('click',syncFromGAS);
 document.getElementById('importBtn').addEventListener('click',openImportModal);
 document.getElementById('sampleBtn').addEventListener('click',loadSample);
 document.getElementById('gasTestBtn').addEventListener('click',testGasConnection);
+document.getElementById('filterBtn').addEventListener('click',e=>{
+  e.stopPropagation();
+  const panel=document.getElementById('filterPanel');
+  panel.classList.contains('open') ? closeFilterPanel() : openFilterPanel();
+});
+document.addEventListener('click',e=>{
+  const panel=document.getElementById('filterPanel');
+  if(panel.classList.contains('open') && !panel.contains(e.target)) closeFilterPanel();
+});
 document.querySelectorAll('.modal-overlay').forEach(el=>{
   el.addEventListener('click',e=>{if(e.target===el)el.classList.add('hidden');});
 });
@@ -900,6 +999,9 @@ document.addEventListener('keydown',e=>{
 
 // ─── Print ────────────────────────────────────────────────────────
 window.addEventListener('beforeprint',()=>{
+  const _now=new Date();
+  const _ts=`${_now.getFullYear()}/${String(_now.getMonth()+1).padStart(2,'0')}/${String(_now.getDate()).padStart(2,'0')} ${String(_now.getHours()).padStart(2,'0')}:${String(_now.getMinutes()).padStart(2,'0')}`;
+  document.getElementById('printTimestamp').textContent='印刷日時：'+_ts;
   document.body.style.height='auto';
   document.body.style.overflow='visible';
   const main=document.querySelector('.main');
