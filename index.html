@@ -180,6 +180,13 @@ textarea:focus{border-color:var(--accent);}
 .empty-icon{font-size:40px;opacity:.3;}
 .empty-text{font-size:13px;font-weight:500;}
 .empty-sub{font-size:11px;color:var(--text-sub);text-align:center;line-height:1.8;}
+
+/* ─ Print ─ */
+@media print{
+  @page{size:A4 landscape;margin:8mm;}
+  *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;}
+  .app-header,.modal-overlay,.tooltip,.date-info-bar,.today-line{display:none!important;}
+}
 </style>
 </head>
 <body>
@@ -226,6 +233,8 @@ textarea:focus{border-color:var(--accent);}
   <button class="header-btn" id="syncBtn">↻ 同期</button>
   <button class="header-btn" id="importBtn">📋 貼り付け</button>
   <button class="header-btn" id="sampleBtn">サンプル</button>
+  <div class="vd"></div>
+  <button class="header-btn" id="printBtn">🖨 印刷</button>
 </div>
 
 <div class="main">
@@ -888,6 +897,37 @@ document.querySelectorAll('.modal-overlay').forEach(el=>{
 document.addEventListener('keydown',e=>{
   if(e.key==='Escape')document.querySelectorAll('.modal-overlay').forEach(el=>el.classList.add('hidden'));
 });
+
+// ─── Print ────────────────────────────────────────────────────────
+window.addEventListener('beforeprint',()=>{
+  document.body.style.height='auto';
+  document.body.style.overflow='visible';
+  const main=document.querySelector('.main');
+  main.style.height='auto'; main.style.overflow='visible';
+  const tp=document.querySelector('.task-panel');
+  tp.style.height='auto'; tp.style.overflow='visible';
+  const ts=document.getElementById('taskScroll');
+  ts.style.height='auto'; ts.style.overflow='visible'; ts.style.flex='none';
+  const ca=document.getElementById('chartArea');
+  ca.style.height='auto'; ca.style.overflow='visible'; ca.style.flex='none';
+  ca.style.width=document.getElementById('chartInner').style.minWidth;
+  document.getElementById('chartInner').style.minHeight='0';
+  document.getElementById('dateHeader').style.position='relative';
+});
+window.addEventListener('afterprint',()=>{
+  document.body.style.height=''; document.body.style.overflow='';
+  const main=document.querySelector('.main');
+  main.style.height=''; main.style.overflow='';
+  const tp=document.querySelector('.task-panel');
+  tp.style.height=''; tp.style.overflow='';
+  const ts=document.getElementById('taskScroll');
+  ts.style.height=''; ts.style.overflow=''; ts.style.flex='';
+  const ca=document.getElementById('chartArea');
+  ca.style.height=''; ca.style.overflow=''; ca.style.flex=''; ca.style.width='';
+  document.getElementById('chartInner').style.minHeight='';
+  document.getElementById('dateHeader').style.position='';
+});
+document.getElementById('printBtn').addEventListener('click',()=>window.print());
 
 // ─── Init ─────────────────────────────────────────────────────────
 if(gasUrl)setStatus('connected');
