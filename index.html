@@ -108,10 +108,12 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
 .day-cell.label-cell:hover{background:var(--surface2);}
 .day-num{font-family:'DM Mono',monospace;font-size:11px;font-weight:500;color:var(--text-muted);line-height:1;}
 .day-cell.today-cell .day-num{color:var(--today);font-weight:700;}
-.day-cell.weekend .day-num{color:#c8ccd6;}
+.day-cell.saturday .day-num{color:#3b82f6;}
+.day-cell.sunday .day-num{color:#ef4444;}
 .day-cell.selected-col .day-num{color:var(--accent);font-weight:700;}
 .day-dow{font-size:8px;color:var(--text-sub);line-height:1;}
-.day-cell.weekend .day-dow{color:#dde0e8;}
+.day-cell.saturday .day-dow{color:#3b82f6;}
+.day-cell.sunday .day-dow{color:#ef4444;}
 
 /* Chart rows */
 .chart-row{height:var(--row-h);border-bottom:1px solid var(--border);position:relative;display:flex;}
@@ -489,11 +491,11 @@ function renderHeader() {
   let dayHtml='';
   if (unit==='day') {
     dayHtml=days.map(d=>{
-      const isToday=d.getTime()===t.getTime(), isWe=d.getDay()===0||d.getDay()===6;
+      const isToday=d.getTime()===t.getTime(), dayOfWeek=d.getDay(), isWe=dayOfWeek===0||dayOfWeek===6;
       const isSel=selectedCol&&d.getTime()===selectedCol.getTime();
-      const dow=['日','月','火','水','木','金','土'][d.getDay()];
+      const dow=['日','月','火','水','木','金','土'][dayOfWeek];
       let cls='day-cell';
-      if(isSel)cls+=' selected-col'; else if(isToday)cls+=' today-cell'; else if(isWe)cls+=' weekend';
+      if(isSel)cls+=' selected-col'; else if(isToday)cls+=' today-cell'; else if(dayOfWeek===6)cls+=' weekend saturday'; else if(dayOfWeek===0)cls+=' weekend sunday';
       return `<div class="${cls}" style="width:${cw}px" data-date="${d.toISOString()}" onclick="selectDate(this)">
         <span class="day-num">${d.getDate()}</span>${cw>=24?`<span class="day-dow">${dow}</span>`:''}
       </div>`;
