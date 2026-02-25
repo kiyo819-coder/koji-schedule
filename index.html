@@ -515,7 +515,7 @@ function renderHeader() {
     const segs=[]; let cur=null;
     days.forEach(d=>{
       const dom=d.getDate();
-      if(dom===1||dom===10||dom===20||dom===30){
+      if(dom===1||dom===11||dom===21){
         if(cur) segs.push(cur);
         cur={label:String(dom), count:0};
       }
@@ -598,7 +598,7 @@ function renderChart() {
     const segs=[]; let cur=null;
     days.forEach(d=>{
       const dom=d.getDate();
-      if(dom===1||dom===10||dom===20||dom===30){
+      if(dom===1||dom===11||dom===21){
         if(cur) segs.push(cur);
         cur={count:0, hasToday:false, hasSel:false};
       }
