@@ -510,8 +510,24 @@ function renderHeader() {
         <span class="day-num">${d.getDate()}</span>${cw>=24?`<span class="day-dow">${dow}</span>`:''}
       </div>`;
     }).join('');
+  } else if(scale==='half'||scale==='year') {
+    // half/year: group by 1st, 15th, 30th of each month
+    const segs=[]; let cur=null;
+    days.forEach(d=>{
+      const dom=d.getDate();
+      if(dom===1||dom===15||dom===30){
+        if(cur) segs.push(cur);
+        cur={label:String(dom), count:0};
+      }
+      if(cur) cur.count++;
+    });
+    if(cur) segs.push(cur);
+    dayHtml=segs.map(seg=>{
+      const sw=seg.count*cw;
+      return `<div class="day-cell label-cell" style="width:${sw}px;border-right:1px solid var(--border2)">${sw>14?`<span class="day-num" style="font-size:8px">${seg.label}</span>`:''}</div>`;
+    }).join('');
   } else {
-    // week/month unit: show week start dates
+    // week unit: show week start dates
     const weeks=[]; let wc=null;
     days.forEach(d=>{
       const mo=startOfWeek(d), key=mo.toISOString();
