@@ -592,13 +592,38 @@ function renderChart() {
   const rows=document.getElementById('chartRows');
   if (!tasks.length) { rows.innerHTML=`<div class="empty-chart"><div class="empty-icon" style="font-size:36px;opacity:.15">📅</div></div>`; updateTodayLine(); return; }
   const days=getViewDays(), cw=cellW(), t=today(), viewEnd=addDays(viewStart,days.length);
-  const cellsHtml=days.map(d=>{
-    const isT=d.getTime()===t.getTime(), isWe=d.getDay()===0||d.getDay()===6;
-    const isSel=selectedCol&&d.getTime()===selectedCol.getTime();
-    let cls='cell';
-    if(isSel)cls+=' selected-col-cell'; else if(isT)cls+=' today-col'; else if(isWe)cls+=' weekend';
-    return `<div class="${cls}" style="width:${cw}px"></div>`;
-  }).join('');
+  let cellsHtml;
+  if(scale==='half'||scale==='year'){
+    // Group cells by 1st/15th/30th to match header dividers
+    const segs=[]; let cur=null;
+    days.forEach(d=>{
+      const dom=d.getDate();
+      if(dom===1||dom===15||dom===30){
+        if(cur) segs.push(cur);
+        cur={count:0, hasToday:false, hasSel:false};
+      }
+      if(cur){
+        cur.count++;
+        if(d.getTime()===t.getTime()) cur.hasToday=true;
+        if(selectedCol&&d.getTime()===selectedCol.getTime()) cur.hasSel=true;
+      }
+    });
+    if(cur) segs.push(cur);
+    cellsHtml=segs.map(seg=>{
+      const sw=seg.count*cw;
+      let cls='cell';
+      if(seg.hasSel) cls+=' selected-col-cell'; else if(seg.hasToday) cls+=' today-col';
+      return `<div class="${cls}" style="width:${sw}px;border-right:1px solid var(--border2)"></div>`;
+    }).join('');
+  } else {
+    cellsHtml=days.map(d=>{
+      const isT=d.getTime()===t.getTime(), isWe=d.getDay()===0||d.getDay()===6;
+      const isSel=selectedCol&&d.getTime()===selectedCol.getTime();
+      let cls='cell';
+      if(isSel)cls+=' selected-col-cell'; else if(isT)cls+=' today-col'; else if(isWe)cls+=' weekend';
+      return `<div class="${cls}" style="width:${cw}px"></div>`;
+    }).join('');
+  }
   const items=buildDisplayItems();
   rows.innerHTML=items.map(item=>{
     if(item.kind==='group') return `<div class="group-chart-sep" style="height:22px;width:${days.length*cw}px"></div>`;
