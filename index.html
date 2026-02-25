@@ -85,7 +85,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
 .power-badge{display:inline-block;background:var(--accent-light);color:var(--accent);border-radius:3px;padding:1px 5px;font-size:9px;font-weight:700;font-family:'DM Mono',monospace;}
 
 /* Group header */
-.group-header-row{height:22px;display:flex;align-items:center;padding:0 10px;background:linear-gradient(90deg,var(--accent-light),transparent);border-bottom:1px solid var(--border);border-top:2px solid var(--accent);font-size:9px;font-weight:700;color:var(--accent);letter-spacing:.3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;position:sticky;top:0;z-index:2;}
+.group-header-row{height:22px;display:flex;align-items:center;padding:0 10px;background:linear-gradient(90deg,var(--accent-light),transparent);border-bottom:1px solid var(--border);border-top:2px solid var(--accent);font-size:9px;font-weight:700;color:var(--accent);letter-spacing:.3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .group-chart-sep{height:22px;background:linear-gradient(90deg,var(--accent-light),rgba(26,86,219,.02));border-top:2px solid var(--accent);border-bottom:1px solid var(--border);}
 
 /* ─ Chart ─ */
@@ -462,6 +462,9 @@ function getSortedTasks() {
 // ─── Render ───────────────────────────────────────────────────────
 function render() {
   renderHeader(); renderLeft(); renderChart(); updatePeriodLabel();
+  // renderLeft() replaces innerHTML which resets taskScroll.scrollTop to 0.
+  // Force chartArea.scrollTop to match so both panels stay in sync.
+  document.getElementById('chartArea').scrollTop = document.getElementById('taskScroll').scrollTop;
   document.getElementById('countBadge').textContent=`${tasks.length} 件`;
   document.querySelectorAll('.th-cell.sortable').forEach(th=>{
     th.classList.toggle('sort-active', th.dataset.sort===sortKey);
@@ -516,25 +519,36 @@ function renderHeader() {
   document.getElementById('chartInner').style.minWidth=(days.length*cw)+'px';
 }
 
+// ─── Build unified display item list ─────────────────────────────
+function buildDisplayItems() {
+  const sorted=getSortedTasks();
+  const isGrouped=sortKey!=='none'&&sortKey!=='start'&&sortKey!=='end';
+  const items=[]; let lastG=null, taskIdx=0;
+  sorted.forEach(task=>{
+    if(isGrouped){
+      const gv=task[sortKey]||'';
+      if(gv!==lastG){lastG=gv;items.push({kind:'group',label:gv||'未決定'});}
+    }
+    items.push({kind:'task',task,idx:taskIdx++});
+  });
+  return items;
+}
+
 function renderLeft() {
   const scroll=document.getElementById('taskScroll');
   if (!tasks.length) {
     scroll.innerHTML=`<div class="empty-chart"><div class="empty-icon">📋</div><div class="empty-text">データを読み込んでください</div><div class="empty-sub">「GAS連携」でスプレッドシートと接続するか<br>「貼り付け」でデータを直接入力</div></div>`;
     return;
   }
-  const sorted=getSortedTasks(), isGrouped=sortKey!=='none'&&sortKey!=='start'&&sortKey!=='end';
-  let lastG=null;
-  scroll.innerHTML=sorted.map((t,i)=>{
-    let gh='';
-    if(isGrouped){
-      const gv=t[sortKey]||'';
-      if(gv!==lastG){lastG=gv;gh=`<div class="group-header-row">▸ ${gv||'未決定'}</div>`;}
-    }
+  const items=buildDisplayItems();
+  scroll.innerHTML=items.map(item=>{
+    if(item.kind==='group') return `<div class="group-header-row">▸ ${item.label}</div>`;
+    const t=item.task, i=item.idx;
     const d=(val)=>val?`<span>${val}</span>`:`<span class="undecided">未決定</span>`;
     const pwRaw=t.power||'';
     const pwColor=pwRaw.includes('特高')?'background:#7c3aed;color:#fff':pwRaw.includes('高圧')?'background:#dc2626;color:#fff':pwRaw.includes('低圧')?'background:#059669;color:#fff':'background:var(--accent-light);color:var(--accent)';
     const pw=pwRaw?`<span class="power-badge" style="${pwColor}">${pwRaw}</span>`:`<span class="undecided">未決定</span>`;
-    return gh+`<div class="task-row" data-id="${t.id}">
+    return `<div class="task-row" data-id="${t.id}">
       <div class="td-num">${i+1}</div>
       <div class="td-dot-name"><div class="dot" style="background:${t.color}"></div><span class="td-name" title="${t.name}">${t.name}</span></div>
       <div class="td-cell td-area">${d(t.area)}</div>
@@ -549,8 +563,7 @@ function renderLeft() {
 function renderChart() {
   const rows=document.getElementById('chartRows');
   if (!tasks.length) { rows.innerHTML=`<div class="empty-chart"><div class="empty-icon" style="font-size:36px;opacity:.15">📅</div></div>`; updateTodayLine(); return; }
-  const days=getViewDays(), cw=cellW(), t=today(), viewEnd=addDays(viewStart,days.length), sorted=getSortedTasks();
-  const isGrouped=sortKey!=='none'&&sortKey!=='start'&&sortKey!=='end';
+  const days=getViewDays(), cw=cellW(), t=today(), viewEnd=addDays(viewStart,days.length);
   const cellsHtml=days.map(d=>{
     const isT=d.getTime()===t.getTime(), isWe=d.getDay()===0||d.getDay()===6;
     const isSel=selectedCol&&d.getTime()===selectedCol.getTime();
@@ -558,17 +571,17 @@ function renderChart() {
     if(isSel)cls+=' selected-col-cell'; else if(isT)cls+=' today-col'; else if(isWe)cls+=' weekend';
     return `<div class="${cls}" style="width:${cw}px"></div>`;
   }).join('');
-  let lastG2=null;
-  rows.innerHTML=sorted.map((task,i)=>{
-    let sep='';
-    if(isGrouped){const gv=task[sortKey]||'';if(gv!==lastG2){lastG2=gv;if(i>0)sep=`<div class="group-chart-sep" style="width:${days.length*cw}px"></div>`;}}
+  const items=buildDisplayItems();
+  rows.innerHTML=items.map(item=>{
+    if(item.kind==='group') return `<div class="group-chart-sep" style="height:22px;width:${days.length*cw}px"></div>`;
+    const task=item.task, i=item.idx;
     const visible=task.end>=viewStart&&task.start<=viewEnd;
     let barHtml='';
     if(visible){
       const left=diffDays(viewStart,task.start)*cw, width=Math.max((diffDays(task.start,task.end)+1)*cw,3);
       barHtml=`<div class="gantt-bar" data-id="${task.id}" style="left:${left}px;width:${width}px;background:${task.color}"><span class="bar-label">${cw>=14?task.name:''}</span><div class="bar-resize" data-id="${task.id}"></div></div>`;
     }
-    return sep+`<div class="chart-row${i%2?'':' even'}">${cellsHtml}${barHtml}</div>`;
+    return `<div class="chart-row${i%2?'':' even'}">${cellsHtml}${barHtml}</div>`;
   }).join('');
   attachBarEvents(); updateTodayLine(); syncScroll();
 }
