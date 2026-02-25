@@ -700,11 +700,30 @@ function doImport(){
 }
 
 // ─── GAS Sync ────────────────────────────────────────────────────
+function gasErrMsg(e){
+  if(e.message==='Failed to fetch'){
+    const isFile=location.protocol==='file:';
+    return 'Failed to fetch\n\n'
+      +(isFile
+        ? '【原因】ファイルをfile://で直接開いているためCORSエラーが発生しています。\n'
+          +'【対処】index.htmlをWebサーバー経由で開いてください。\n'
+          +'　例：VS Code の Live Server 拡張、または\n'
+          +'　　　ターミナルで python -m http.server 8000 を実行後\n'
+          +'　　　http://localhost:8000/index.html を開く'
+        : 'ネットワークに接続できません。\n'
+          +'・GAS URLが正しいか確認（末尾が /exec であること）\n'
+          +'・GASのデプロイ設定：アクセス権限 = 全員');
+  }
+  return e.message;
+}
 async function syncFromGAS(){
   if(!gasUrl){openGasModal();return;}
   setStatus('loading');
   try{
-    const res=await fetch(gasUrl), json=await res.json();
+    const res=await fetch(gasUrl);
+    const ct=res.headers.get('content-type')||'';
+    if(!ct.includes('application/json'))throw new Error('JSONが返されませんでした。GASのデプロイ設定を確認してください（アクセス：全員）');
+    const json=await res.json();
     if(!json.ok)throw new Error(json.error||'Error');
     let ci=0;
     tasks=json.data.map(r=>({
@@ -713,7 +732,7 @@ async function syncFromGAS(){
       start:parseDate(r.start), end:parseDate(r.end), color:COLORS[ci++%COLORS.length]
     })).filter(t=>t.start&&t.end&&t.start<=t.end);
     setStatus('connected');scrollToEarliest();render();
-  }catch(err){setStatus('error');alert('接続エラー：\n'+err.message);}
+  }catch(err){setStatus('error');alert('接続エラー：\n'+gasErrMsg(err));}
 }
 function setStatus(s){
   const dot=document.getElementById('statusDot'),lbl=document.getElementById('statusLabel');
@@ -730,7 +749,7 @@ async function testGasConnection(){
     const r=await fetch(url),j=await r.json();
     if(j.ok){res.style.color='#10b981';res.textContent=`✓ 接続成功！${j.data.length}件`;}
     else{res.style.color='#ef4444';res.textContent='✗ '+(j.error||'不明');}
-  }catch(e){res.style.color='#ef4444';res.textContent='✗ 接続失敗：'+e.message;}
+  }catch(e){res.style.color='#ef4444';res.textContent='✗ 接続失敗：'+gasErrMsg(e).split('\n')[0];}
 }
 function saveGasUrl(){gasUrl=document.getElementById('gasUrlInput').value.trim();localStorage.setItem('gantt_gas_url',gasUrl);closeGasModal();syncFromGAS();}
 function openGasModal(){document.getElementById('gasUrlInput').value=gasUrl;document.getElementById('gasCodeDisplay').value=GAS_CODE;document.getElementById('gasTestResult').textContent='';document.getElementById('gasModal').classList.remove('hidden');}
